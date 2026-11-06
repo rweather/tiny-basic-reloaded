@@ -34,7 +34,7 @@ the Z-80 and 6502 are now open source, so porting the "real deal" is
 possible.  Other implementations also exist, like
 [EhBASIC](http://retro.hansotten.nl/6502-sbc/lee-davison-web-site/enhanced-6502-basic/).
 
-Retro and modern homebrew computing is why.
+Retro and homebrew computing is why.
 
 There is a resurgence of interest in restoring older machines, many of which
 are boring "business computers" from the era and don't come with any good
@@ -46,13 +46,27 @@ memory constraints are an issue.
 Homebrew computers, built to similar designs as those in the 1970's,
 can also present issues.  If you are building your computer around an
 odd CPU or making a CPU from scratch in TTL logic or an FPGA,
-then your language options are limited.
+then your language options are limited without a lot of software work.
 
 A BASIC implementation that is very easy to port to odd architectures?  Useful.
 
 And ... I like writing compilers and interpreters.  So why not?
 
-## TODO
+## Approach
+
+My implementation uses the original IL bytecode idea to write the core
+of the BASIC interpreter once.  And then automated machine translation
+is used to convert the bytecode into assembly code for the target
+architecture.
+
+This approach produces more efficient code than interpreting IL bytecode
+at runtime, while reducing the implementation burden on new targets.
+To port to a target, the user need only supply I/O, memory management,
+a math library, and the automated translator.
+
+This implementation also goes beyond "Tiny" with features from more
+featureful versions of BASIC.  New IL bytecode instructions are added to
+provide the extra functionality.
 
 ## License
 

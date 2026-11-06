@@ -63,6 +63,8 @@
 ;       jumps that could be expressed with a small relative offset and
 ;       "JMP" for longer jumps.  Note: the original code uses "IJMP"
 ;       for the "JMP" instruction (see the description of "CALL" above).
+; GETLN
+;       Get a line of input from the terminal, terminated by a CR.
 ; PRS
 ;       Print all characters up to the next double quote ".  If the end of
 ;       line is encountered, then report an error.
@@ -133,8 +135,12 @@
 ;       Test for a line number at the next program location.  If it is a
 ;       valid line number, then continue execution with the next instruction.
 ;       Otherwise continue IL execution from "label".
-; XINIT
+; INIT
 ;       Initialize the program storage area to empty and clear all variables.
+; XINIT
+;       Initialize for execution of the next statement.  Empties AESTK.
+; LST
+;       Type out the entire BASIC program.
 ;
 ;-----------------------------------------------------------------------------
 ;
