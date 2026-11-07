@@ -51,7 +51,7 @@ extern "C" {
 #define TB_I_ADD            0x12    /**< Add top two AESTK items */
 #define TB_I_SUB            0x13    /**< Subtract top two AESTK items */
 #define TB_I_NEG            0x14    /**< Negate top-most AESTK item */
-#define TB_I_MUL            0x15    /**< Multiply top two AESTK items */
+#define TB_I_MPY            0x15    /**< Multiply top two AESTK items */
 #define TB_I_DIV            0x16    /**< Divide top two AESTK items */
 #define TB_I_LIT            0x17    /**< Push a literal onto AESTK */
 #define TB_I_STORE          0x18    /**< Store to a variable */
@@ -63,6 +63,25 @@ extern "C" {
 #define TB_I_XINIT          0x1E    /**< Initialize for statement execution */
 #define TB_I_GETLN          0x1F    /**< Get a line of input in direct mode */
 #define TB_I_LST            0x20    /**< List the BASIC program */
+#define TB_I_IND            0x21    /**< Index a variable to get the value */
+
+/* Instructions for Tiny BASIC Extended / TBX */
+#define TB_I_ARRAY1         0x30    /**< Index into a 1D array */
+#define TB_I_ARRAY2         0x31    /**< Index into a 2D array */
+#define TB_I_DIM1           0x32    /**< Dimension a 1D array */
+#define TB_I_DIM2           0x33    /**< Dimension a 2D array */
+#define TB_I_DONEX          0x34    /**< Alternate version of "DONE" */
+#define TB_I_FOR            0x35    /**< Mark the start of a "FOR" statement */
+#define TB_I_NEXT           0x36    /**< Perform "NEXT" */
+#define TB_I_NXTX           0x37    /**< Alternate version of "NXT" */
+#define TB_I_LIST0          0x38    /**< Set up to list the entire program */
+#define TB_I_LIST1          0x39    /**< Set up to list a single line */
+#define TB_I_LIST2          0x3A    /**< Set up to list a range of lines */
+#define TB_I_RANDOM         0x3B    /**< Generate a random number */
+#define TB_I_SIZE           0x3C    /**< Print memory sizes */
+#define TB_I_SPCONE         0x3D    /**< Output a single space */
+#define TB_I_TAB            0x3E    /**< Output a number of space characters */
+#define TB_I_TSTA           0x3F    /**< Test if an array reference */
 
 /* Error codes from the original Tiny BASIC design */
 #define TB_E_SYNTAX         1       /**< Syntax error */
@@ -81,6 +100,9 @@ extern "C" {
 #define TB_E_IL             11      /**< IL error */
 #define TB_E_NODATA         12      /**< Out of data on INPUT or READ */
 #define TB_E_TYPE           13      /**< Type mismatch */
+#define TB_E_NEXTFOR        14      /**< NEXT without FOR */
+#define TB_E_SUBSCRIPT      15      /**< Subscript out of range */
+#define TB_E_REDIM          16      /**< Redimensioned array */
 
 /* Value types */
 #define TB_T_NUMBER         0       /**< Value is a number */

@@ -380,6 +380,11 @@ void tb_exec_one(tb_state_t *state)
 
     /* Dispatch the instruction */
     switch (insn) {
+
+    /*
+     * Classic Tiny BASIC instructions.
+     */
+
     case TB_I_TST:
         /* Test the next token to see if it is a literal string */
         tb_skip_whitespace(state);
@@ -414,6 +419,7 @@ void tb_exec_one(tb_state_t *state)
         break;
 
     case TB_I_DONE:
+    case TB_I_DONEX:
         /* Check that we are at the end of the current statement.
          * A syntax error will occur if we are not. */
         tb_done(state);
@@ -441,6 +447,7 @@ void tb_exec_one(tb_state_t *state)
         break;
 
     case TB_I_NXT:
+    case TB_I_NXTX:
         /* Go to the next line of the BASIC program */
         tb_next(state);
         break;
@@ -512,7 +519,7 @@ void tb_exec_one(tb_state_t *state)
         tb_push(state, -tb_pop(state));
         break;
 
-    case TB_I_MUL:
+    case TB_I_MPY:
         /* Multiply the values at the top of the AESTK and push the result */
         y = tb_pop(state);
         x = tb_pop(state);
@@ -600,6 +607,91 @@ void tb_exec_one(tb_state_t *state)
     case TB_I_LST:
         /* List the BASIC program */
         tb_program_list(state);
+        break;
+
+    case TB_I_IND:
+        /* Index a variable to get its value */
+        x = tb_pop(state);
+        if (x >= 0 && x < TB_MAX_VARS) {
+            tb_push(state, state->vars[x]);
+        } else {
+            tb_error(state, TB_E_SYNTAX);
+        }
+        break;
+
+    /*
+     * Tiny BASIC Extended (TBX) instructions.
+     */
+
+    case TB_I_ARRAY1:
+        /* Index into a 1D array */
+        // TODO
+        break;
+
+    case TB_I_ARRAY2:
+        /* Index into a 2D array */
+        // TODO
+        break;
+
+    case TB_I_DIM1:
+        /* Dimension a 1D array */
+        // TODO
+        break;
+
+    case TB_I_DIM2:
+        /* Dimension a 2D array */
+        // TODO
+        break;
+
+    case TB_I_FOR:
+        /* Mark the start of a "FOR" loop */
+        // TODO
+        break;
+
+    case TB_I_NEXT:
+        /* "NEXT" at the end of a "FOR" loop */
+        // TODO
+        break;
+
+    case TB_I_LIST0:
+        /* Set up to list the entire BASIC program when 'LST' is used */
+        // TODO
+        break;
+
+    case TB_I_LIST1:
+        /* Set up to list a single line when 'LST' is used */
+        // TODO
+        break;
+
+    case TB_I_LIST2:
+        /* Set up to list a range of lines when 'LST' is used */
+        // TODO
+        break;
+
+    case TB_I_RANDOM:
+        /* Generate a random number between 0 and 10000 and push onto AESTK */
+        // TODO
+        break;
+
+    case TB_I_SIZE:
+        /* Print memory sizes */
+        // TODO
+        break;
+
+    case TB_I_SPCONE:
+        /* Output a single space */
+        fputc(' ', stdout);
+        fflush(stdout);
+        break;
+
+    case TB_I_TAB:
+        /* Output a number of spaces, as given by the value on AESTK */
+        // TODO
+        break;
+
+    case TB_I_TSTA:
+        /* Test if the next token is an array reference like "X(" */
+        // TODO
         break;
 
     default:

@@ -1,7 +1,10 @@
 ;-----------------------------------------------------------------------------
 ;
-; This is the "corrected" IL implementation of Tiny BASIC from January 1976
-; with some additional corrections to fix some bugs.
+; This is the "corrected" IL implementation of Tiny BASIC with some
+; additional corrections to fix some bugs.
+;
+; Original version of Tiny BASIC by Dennis Allison and others, 1975
+; Fixups and commentary by Rhys Weatherley, 2026
 ;
 ; https://archive.org/details/dr_dobbs_journal_vol_01
 ;
@@ -40,7 +43,7 @@
 ; points for "GOSUB" and "RETURN".  "AESTK" is the arithmetic expression
 ; stack and keeps in-progress numeric values during expression evaluation.
 ;
-; TST label / DB string
+; TST label string
 ;       Skip leading blanks and check if the string matches the line.
 ;       If it does, then skip the matched string and proceed with the
 ;       next instruction.  Otherwise jump to "label".  If "label"
@@ -109,7 +112,7 @@
 ;       Replace the top two elements on AESTK with their difference.
 ; NEG
 ;       Replace the top element on AESTK with its negation.
-; MUL
+; MPY
 ;       Replace the top two elements on AESTK with their product.
 ; DIV
 ;       Replace the top two elements on AESTK with their quotient.
@@ -118,6 +121,9 @@
 ; STORE
 ;       Store the value at the top of AESTK to the variable whose index is
 ;       given just below the value on the AESTK.
+; IND
+;       Index into the variable index on the top of AESTK and put the
+;       value found there back onto AESTK.
 ; TSTV label
 ;       Test for a variable at the next program location.  If it is a
 ;       variable, push its index onto the AESTK, and continue execution
@@ -172,41 +178,33 @@ XEC:        XINIT               ; Initialize for execution
 ;
 ; Statement Executor
 ;
-STMT:       TST     S1          ; Check for 'LET'
-            DB      'LE','T' OR 200O
+STMT:       TST     S1 'LET'    ; Check for 'LET'
 SE1:        TSTV    SE1         ; Error if no variable!
-SE2:        TST     SE2         ; Error if no "="
-            DB      '=' OR 200O
+SE2:        TST     SE2 '='     ; Error if no "="
             CALL    EXPR        ; Put expression on AESTK
             DONE                ; Check for CR line terminator
             STORE               ; Put value of expression in its cell
             NXT                 ; Continue next line
 ;
 ;
-S1:         TST     S3          ; Check for 'GO'
-            DB      'G','O' OR 200O
-            TST     S2          ; Check for 'GOTO'
-            DB      'T','O' OR 200O
+S1:         TST     S3 'GO'     ; Check for 'GO'
+            TST     S2 'TO'     ; Check for 'GOTO'
             CALL    EXPR        ; Get the label
             DONE                ; Check for CR line terminator
             XFER                ; Do a 'GOTO' to the label
 ;
 ;
-S2:         TST     S2          ; Check for 'GOSUB', failure is an error!
-            DB      'SU','B' OR 200O
+S2:         TST     S2 'SUB'    ; Check for 'GOSUB', failure is an error!
             CALL    EXPR        ; Put expression on AESTK
             DONE                ; Check for CR line terminator
             SAV                 ; Save next line number in BASIC text
             XFER                ; Do a 'GOSUB' to the label
 ;
 ;
-S3:         TST     S8          ; Check for 'PRINT'
-            DB      'PRIN','T' OR 200O
-S4:         TST     S7          ; Check for " to begin a string
-            DB      '"' OR 200O
+S3:         TST     S8 'PRINT'  ; Check for 'PRINT'
+S4:         TST     S7 '"'      ; Check for " to begin a string
             PRS                 ; Print the data enclosed in quotes
-S5:         TST     S6          ; ',' means more to come
-            DB      ',' OR 200O
+S5:         TST     S6 ','      ; ',' means more to come
             SPC                 ; Space to next zone
             HOP     S4          ; Go back for more
 S6:         DONE                ; Check for CR line terminator
@@ -217,77 +215,65 @@ S7:         CALL    EXPR        ; Get the numeric value to print
             HOP     S4          ; Go back for more
 ;
 ;
-S8:         TST     S9          ; Check for 'IF'
-            DB      'I','F' OR 200O
+S8:         TST     S9 'IF'     ; Check for 'IF'
             CALL    EXPR        ; Get the first expression
             CALL    RELOP       ; Get the relational operator
             CALL    EXPR        ; Get the second expression
-S8A:        TST     S8A         ; Check for 'THEN'
-            DB      'THE','N' OR 200O
+S8A:        TST     S8A 'THEN'  ; Check for 'THEN'
             CMPR                ; If not true continue next line
             JMP     STMT        ; If true process the rest of this line
 ;
 ;
-S9:         TST     S12         ; Check for 'INPUT'
-            DB      'INPU','T' OR 200O
+S9:         TST     S12 'INPUT' ; Check for 'INPUT'
 S10:        CALL    VAR         ; Get the variable's index
             INNUM               ; Get the number from the teletype
             STORE               ; Put the value of the variable in its cell
-            TST     S11         ; ',' means more data
-            DB      ',' OR 200O
+            TST     S11 ','     ; ',' means more data
+            JMP     S10
 S11:        DONE                ; Check for CR line terminator
             NXT                 ; Continue next line
 ;
 ;
-S12:        TST     S13         ; Check for 'RETURN'
-            DB      'RETUR','N' OR 200O
+S12:        TST     S13 'RETURN' ; Check for 'RETURN'
             DONE                ; Check for CR line terminator
             RSTR                ; Return to caller
 ;
 ;
-S13:        TST     S14         ; Check for 'END'
-            DB      'EN','D' OR 200O
+S13:        TST     S14 'END'   ; Check for 'END'
             FIN                 ; Go back to control mode
 ;
 ;
-S14:        TST     S15         ; Check for 'LIST'
-            DB      'LIS','T' OR 200O
+S14:        TST     S15 'LIST'  ; Check for 'LIST'
             DONE                ; Check for CR line terminator
             LST                 ; Type out the BASIC program
             NXT                 ; Continue next line
 ;
 ;
-S15:        TST     S16         ; Check for 'RUN'
-            DB      'RU','N' OR 200O
+S15:        TST     S16 'RUN'   ; Check for 'RUN'
             DONE                ; Check for CR line terminator
             RNXT                ; Select the first program line and execute it
 ;
 ;
-S16:        TST     S16         ; Check for 'CLEAR'
-            DB      'CLEA','R' OR 200O
+S16:        TST     S16 'CLEAR' ; Check for 'CLEAR'
             JMP     START       ; Reinitialize everything!
 ;
 ; ***
 ;
 ; Interpretive language subroutines
 ;
-EXPR:       TST     E0          ; Test for unary '-'
-            DB      '-' OR 200O
+EXPR:       TST     E0 '-'      ; Test for unary '-'
             CALL    TERM        ; Put term on AESTK
             NEG                 ; Negate value on AESTK
             HOP     E1          ; Go get a term
 ;
-E0:         TST     E01         ; Test for unary '+'
-            DB      '+' OR 200O
+E0:         TST     E01 '+'     ; Test for unary '+'
 E01:        CALL    TERM        ; Put term on AESTK
-E1:         TST     E2          ; Test for addition
-            DB      '+' OR 200O
+E1:         TST     E2 '+'      ; Test for addition
             CALL    TERM        ; Get second term
             ADD                 ; Put sum of terms on AESTK
             HOP     E1          ; Loop around for more
 ;
-E2:         TST     E3          ; Test for subtraction
-            DB      '-' OR 200O
+E2:         TST     E3 '-'      ; Test for subtraction
             CALL    TERM        ; Get second term
             SUB                 ; Put difference of terms on AESTK
             HOP     E1          ; Loop around for more
@@ -297,14 +283,12 @@ E3:         RTN                 ; This can be recursive
 ;
 ;
 TERM:       CALL    FACT        ; Get one factor
-T0:         TST     T1          ; Test for multiplication
-            DB      '*' OR 200O
+T0:         TST     T1 '*'      ; Test for multiplication
             CALL    FACT        ; Get a factor
             MPY                 ; Put the product on AESTK
             HOP     T0          ; Loop around for more
 ;
-T1:         TST     T2          ; Test for division
-            DB      '/' OR 200O
+T1:         TST     T2 '/'      ; Test for division
             CALL    FACT        ; Get a factor
             DIV                 ; Put quotient on AESTK
             HOP     T0          ; Loop around for more
@@ -314,16 +298,14 @@ T2:         RTN                 ; Return to caller
 ;
 ;
 FACT:       TSTV    F0          ; Test for variable
-            IND                 ; Get index of the variable
+            IND                 ; Load the variable's value onto the stack
             RTN
 F0:         TSTN    F1          ; Test for number
             RTN
-F1:         TST     F1          ; Error if its not a '('
-            DB      '(' OR 200O
+F1:         TST     F1 '('      ; Error if its not a '('
             CALL    EXPR        ; This is a recursive process
 ;
-FE1:        TST     FE1         ; Every '(' has to have a ')'
-            DB      ')' OR 200O
+FE1:        TST     FE1 ')'     ; Every '(' has to have a ')'
             RTN
 ;
 ; RELOP parses the relational operator that follows and returns
@@ -336,35 +318,28 @@ FE1:        TST     FE1         ; Every '(' has to have a ')'
 ;   4       Greater than
 ;   5       Greater than or equal
 ;
-RELOP:      TST     R0          ; Check for '='
-            DB      '=' OR 200O
+RELOP:      TST     R0 '='      ; Check for '='
             LIT     0
             RTN
 ;
-R0:         TST     R4          ; Check for '<'
-            DB      '<' OR 200O
-            TST     R1          ; Check for '<='
-            DB      '=' OR 200O
+R0:         TST     R4 '<'      ; Check for '<'
+            TST     R1 '='      ; Check for '<='
             LIT     2
             RTN
 ;
-R1:         TST     R3          ; Check for '<>'
-            DB      '>' OR 200O
+R1:         TST     R3 '>'      ; Check for '<>'
             LIT     3
             RTN
 ;
 R3:         LIT     1
             RTN
 ;
-R4:         TST     R4          ; Check for '>'
-            DB      '>' OR 200O
-            TST     R5          ; Check for '>='
-            DB      '=' OR 200O
+R4:         TST     R4 '>'      ; Check for '>'
+            TST     R5 '='      ; Check for '>='
             LIT     5
             RTN
 ;
-R5:         TST     R6          ; Check for '><'
-            DB      '<' OR 200O
+R5:         TST     R6 '<'      ; Check for '><'
             LIT     3
             RTN
 ;

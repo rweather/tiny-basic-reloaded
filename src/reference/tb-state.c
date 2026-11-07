@@ -83,6 +83,9 @@ void tb_error(tb_state_t *state, uint8_t error)
         "IL ERROR",
         "OUT OF DATA",
         "TYPE MISMATCH",
+        "NEXT WITHOUT FOR",
+        "SUBSCRIPT OUT OF RANGE",
+        "REDIMENSIONED ARRAY",
         "UNKNOWN ERROR"     /* Must be last in the array */
     };
     if (error >= (sizeof(errors) / sizeof(errors[0]))) {
