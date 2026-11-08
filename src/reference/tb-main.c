@@ -22,9 +22,44 @@
 
 #include "tb.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
+/* IL bytecode programs for the Tiny BASIC variants */
+#include "tb-bytecode-original.h"
+#include "tb-bytecode-extended.h"
+
+static tb_state_t tb;
 
 int main(int argc, char **argv)
 {
+    const tb_il_program_t *il = &tb_original;
+    const char *name = "TINY BASIC";
+
+    /* Parse the command-line arguments */
+    if (argc > 1) {
+        if (!strcmp(argv[1], "-x")) {
+            /* "-x" selects the Tiny BASIC Extended (TBX) version */
+            il = &tb_extended;
+            name = "TINY BASIC EXTENDED";
+        } else if (!strcmp(argv[1], "-o")) {
+            /* "-o" selects the original Tiny BASIC version */
+            il = &tb_original;
+            name = "TINY BASIC";
+        }
+    }
+    printf("%s V1.0\n", name);
+    printf("%u BYTES FREE\n\n", TB_MAX_PROGRAM - 4);
+
+    /* Seed the libc system random number generator */
+    srand(time(0));
+
+    /* Initialize the Tiny BASIC engine and start running */
+    tb_init(&tb);
+    tb_set_il(&tb, il);
+    while (!tb.eof_seen) {
+        tb_exec_one(&tb);
+    }
     return 0;
 }

@@ -47,6 +47,11 @@ void tb_set_il(tb_state_t *state, const tb_il_program_t *il)
     state->pc = il->start;
 }
 
+void tb_clear_vars(tb_state_t *state)
+{
+    memset(state->vars, 0, sizeof(state->vars));
+}
+
 void tb_new(tb_state_t *state)
 {
     state->program[0] = 0;
@@ -54,7 +59,7 @@ void tb_new(tb_state_t *state)
     state->program[2] = 0;
     state->program[3] = 0;
     state->program_size = 4;
-    memset(state->vars, 0, sizeof(state->vars));
+    tb_clear_vars(state);
     tb_end(state);
 }
 
@@ -133,7 +138,7 @@ static void tb_move_to_next(tb_state_t *state)
 
 void tb_next(tb_state_t *state)
 {
-    if (state->line_number == 0) {
+    if (state->line_number == 0 && !state->colon_mode) {
         /* We were in direct mode, so go back to that */
         tb_end(state);
     } else if (state->colon_mode) {
@@ -147,11 +152,6 @@ void tb_next(tb_state_t *state)
 
         /* Move the cursor to the next line */
         tb_move_to_next(state);
-
-        /* Prepare to process the new line */
-        state->line_number = state->cursor[0];
-        state->line_number += ((uint16_t)(state->cursor[1])) << 8;
-        state->cursor += 3;
         if (state->line_number == 0) {
             /* We have fallen off the end of the BASIC program */
             tb_end(state);
@@ -163,7 +163,7 @@ void tb_next(tb_state_t *state)
 
 void tb_run(tb_state_t *state)
 {
-    memset(state->vars, 0, sizeof(state->vars));
+    tb_clear_vars(state);
     state->cursor = state->program;
     state->line_number = state->cursor[0];
     state->line_number += ((uint16_t)(state->cursor[1])) << 8;
@@ -273,6 +273,7 @@ void tb_goto(tb_state_t *state, tb_value_t line_number)
         if (tb_program_find(state, (uint16_t)line_number) == 0) {
             state->cursor = state->search_cursor + 3;
             state->line_number = (uint16_t)line_number;
+            state->pc = state->il->next;
         } else {
             tb_error(state, TB_E_INVLINE);
         }
@@ -283,13 +284,21 @@ void tb_goto(tb_state_t *state, tb_value_t line_number)
 
 void tb_insert(tb_state_t *state)
 {
+    /* Insert the line into the program */
     uint16_t line_number = tb_pop(state);
     if (!tb_program_insert(state, line_number)) {
         tb_error(state, TB_E_MEMORY);
     }
+
+    /* Set up for direct mode again with an empty line */
     state->cursor = state->line;
     state->line_number = 0;
     state->line[0] = '\0';
+
+    /* When the program changes size, we need to clear the variables
+     * because arrays and other dynamic structures are stored just
+     * beyond the end of the program. */
+    tb_clear_vars(state);
 }
 
 void tb_call(tb_state_t *state, const uint8_t *new_pc)

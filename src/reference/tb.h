@@ -226,6 +226,13 @@ void tb_init(tb_state_t *state);
 void tb_set_il(tb_state_t *state, const tb_il_program_t *il);
 
 /**
+ * @brief Clear all variables.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ */
+void tb_clear_vars(tb_state_t *state);
+
+/**
  * @brief Clears the entire Tiny BASIC state for the "NEW" command.
  *
  * @param[in,out] state Tiny BASIC state.

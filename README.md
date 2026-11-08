@@ -1,5 +1,5 @@
-Tiny BASIC Redux
-================
+Tiny BASIC Redo
+===============
 
 ## History
 
@@ -57,7 +57,7 @@ And ... I like writing compilers and interpreters.  So why not?
 My implementation uses the original IL bytecode idea to write the core
 of the BASIC interpreter once.  And then automated machine translation
 is used to convert the bytecode into assembly code for the target
-architecture.
+architecture.  The bytecode is not interpreted; it is compiled.
 
 This approach produces more efficient code than interpreting IL bytecode
 at runtime, while reducing the implementation burden on new targets.

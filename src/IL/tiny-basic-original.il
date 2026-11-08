@@ -212,7 +212,7 @@ S6:         DONE                ; Check for CR line terminator
             NXT                 ; Continue next line
 S7:         CALL    EXPR        ; Get the numeric value to print
             PRN                 ; Print the number
-            HOP     S4          ; Go back for more
+            HOP     S5          ; Go back for more
 ;
 ;
 S8:         TST     S9 'IF'     ; Check for 'IF'

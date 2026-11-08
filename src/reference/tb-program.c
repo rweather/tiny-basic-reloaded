@@ -86,19 +86,46 @@ int tb_program_find(tb_state_t *state, uint16_t line_number)
     return -1;
 }
 
-static size_t tb_trim_line(tb_state_t *state)
+static size_t tb_normalize_line(tb_state_t *state)
 {
     size_t size;
+    size_t index;
+    size_t out_index;
+    uint8_t ch;
+    int quote;
+
+    /* Trim whitespace from the start and end of the line buffer */
     tb_skip_whitespace(state);
     size = strlen((const char *)(state->cursor));
     while (size > 0) {
-        uint8_t ch = state->cursor[size - 1];
+        ch = state->cursor[size - 1];
         if (!tb_is_whitespace(ch)) {
             break;
         }
         --size;
     }
-    return size;
+
+    /* Collapse multiple spaces and convert to uppercase */
+    out_index = 0;
+    quote = 0;
+    for (index = 0; index < size; ++index) {
+        ch = state->cursor[index];
+        state->cursor[out_index] = ch;
+        if (ch == '"') {
+            quote = !quote;
+        } else if (ch >= 'a' && ch <= 'z' && !quote) {
+            /* Convert characters outside of quotes into uppercase */
+            state->cursor[out_index] = ch - 'a' + 'A';
+        } else if (ch == ' ' && !quote) {
+            if (out_index > 0 && state->cursor[out_index - 1] == ' ') {
+                /* Collapse multiple spaces into one */
+                continue;
+            }
+        }
+        ++out_index;
+    }
+    state->cursor[out_index] = 0;
+    return out_index;
 }
 
 static int tb_program_do_insert
@@ -114,9 +141,10 @@ static int tb_program_do_insert
     state->search_cursor[0] = (uint8_t)line_number;
     state->search_cursor[1] = (uint8_t)(line_number >> 8);
     state->search_cursor[2] = (uint8_t)(size - 4);
-    memcpy(state->search_cursor + 3, state->cursor, size);
-    state->search_cursor[size + 3] = 0;
+    memcpy(state->search_cursor + 3, state->cursor, size - 4);
+    state->search_cursor[size - 1] = 0;
     state->search_line = line_number;
+    state->program_size += size;
     return 1;
 }
 
@@ -131,7 +159,7 @@ static void tb_program_do_delete(tb_state_t *state)
 
 int tb_program_insert(tb_state_t *state, uint16_t line_number)
 {
-    size_t size = tb_trim_line(state);
+    size_t size = tb_normalize_line(state);
     int cmp = tb_program_find(state, line_number);
     if (size == 0) {
         /* Delete the current line if the number matches */

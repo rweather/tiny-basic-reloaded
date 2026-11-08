@@ -22,6 +22,7 @@
 
 #include "tb.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /**
@@ -86,12 +87,14 @@ static int tb_match_string(tb_state_t *state)
  * @brief Determine if the next token is a variable name.
  *
  * @param[in,out] state Tiny BASIC state.
+ * @param[in] is_array Non-zero if testing for an array variable name.
  *
  * @return Non-zero if a variable, zero if not.
  */
-static int tb_match_variable(tb_state_t *state)
+static int tb_match_variable(tb_state_t *state, int is_array)
 {
-    uint8_t ch = state->cursor[0];
+    uint8_t *cursor = state->cursor;
+    uint8_t ch = cursor[0];
     if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) {
         /* Variable names are A-Z only, calculate the index */
         tb_value_t index = (ch - 'A') & 0x1F;
@@ -99,14 +102,27 @@ static int tb_match_variable(tb_state_t *state)
         /* The next character must not be a letter or number.
          * This will be relaxed in the future for more variables.
          * For now, multi-letter words are considered keywords. */
-        ch = state->cursor[1];
+        ++cursor;
+        ch = *cursor;
         if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') ||
                 (ch >= '0' && ch <= '9')) {
             return 0;
         }
 
-        /* Advance the program position */
-        ++(state->cursor);
+        /* Check for '(' if we are looking for an array variable */
+        if (is_array) {
+            while (tb_is_whitespace(ch)) {
+                ++cursor;
+                ch = *cursor;
+            }
+            if (ch != '(') {
+                /* Not an array variable reference */
+                return 0;
+            }
+        }
+
+        /* Advance the program position past the variable name */
+        state->cursor = cursor;
 
         /* Push the variable index onto the stack and return */
         tb_push(state, index);
@@ -557,7 +573,7 @@ void tb_exec_one(tb_state_t *state)
         /* Test the next token to see if it is a variable name */
         tb_skip_whitespace(state);
         offset = (int8_t)(*(state->pc)++);
-        if (!tb_match_variable(state)) {
+        if (!tb_match_variable(state, 0)) {
             if (offset == 0) {
                 /* When TSTV jumps back to itself, that means a syntax error */
                 tb_error(state, TB_E_SYNTAX);
@@ -670,12 +686,13 @@ void tb_exec_one(tb_state_t *state)
 
     case TB_I_RANDOM:
         /* Generate a random number between 0 and 10000 and push onto AESTK */
-        // TODO
+        tb_push(state, rand() % 10001);
         break;
 
     case TB_I_SIZE:
         /* Print memory sizes */
-        // TODO
+        printf("USED: %5u BYTES\n", state->program_size);
+        printf("FREE: %5u BYTES\n", TB_MAX_PROGRAM - state->program_size);
         break;
 
     case TB_I_SPCONE:
@@ -686,12 +703,30 @@ void tb_exec_one(tb_state_t *state)
 
     case TB_I_TAB:
         /* Output a number of spaces, as given by the value on AESTK */
-        // TODO
+        x = tb_pop(state);
+        while (x > 0) {
+            if (state->do_break) {
+                break;
+            }
+            putc(' ', stdout);
+            --x;
+        }
+        fflush(stdout);
         break;
 
     case TB_I_TSTA:
-        /* Test if the next token is an array reference like "X(" */
-        // TODO
+        /* Test if the next token is an array reference like "X(".
+         * Get a pointer to the array and push it onto the stack. */
+        tb_skip_whitespace(state);
+        offset = (int8_t)(*(state->pc)++);
+        if (!tb_match_variable(state, 1)) {
+            if (offset == 0) {
+                /* When TSTA jumps back to itself, that means a syntax error */
+                tb_error(state, TB_E_SYNTAX);
+            } else {
+                state->pc = start + offset;
+            }
+        }
         break;
 
     default:

@@ -75,11 +75,11 @@ if args.c_source:
         if (offset % 12) != 0:
             file.write('\n')
         file.write('};\n')
-        file.write('static tb_il_program_t const tb = {\n');
+        file.write('static tb_il_program_t const %s = {\n' % name);
         file.write('    .start  = %s_code,\n' % name)
         file.write('    .direct = %s_code + 2,\n' % name)
         file.write('    .error  = %s_code + 1,\n' % name)
-        file.write('    .next   = %s_code + 6\n' % name)
+        file.write('    .next   = %s_code + 9\n' % name)
         file.write('};\n')
 else:
     # Output the IL in binary.
