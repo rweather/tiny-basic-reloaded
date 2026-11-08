@@ -225,7 +225,7 @@ S8A:        TST     S8A 'THEN'  ; Check for 'THEN'
 ;
 ;
 S9:         TST     S12 'INPUT' ; Check for 'INPUT'
-S10:        CALL    VAR         ; Get the variable's index
+S10:        TSTV    S10         ; Get the variable's index
             INNUM               ; Get the number from the teletype
             STORE               ; Put the value of the variable in its cell
             TST     S11 ','     ; ',' means more data

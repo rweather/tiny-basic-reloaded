@@ -129,7 +129,7 @@ LNECLT:     GETLN               ; Write prompt and get a line
 ; Statement executor
 ;
 XEQ:        XINIT               ; Initialize for execution
-DIR:        TST     S1,'LET'    ; Check for 'LET'
+DIR:        TST     S1 'LET'    ; Check for 'LET'
             CALL    AVTEST      ; Get the variable reference
 S0:         TST     S0 '='      ; Error if no '=' after the variable name
             CALL    EXPR1       ; Put expression on AESTK
@@ -252,13 +252,13 @@ S12:        TST     S13 'RET'   ; Check for 'RET'
 ;
 ; 'END' command
 ;
-S13:        TST     S14 'END'   ; Check for 'END'
+S13:        TST     S13B 'END'  ; Check for 'END'
             NLINE               ; Write CR-LF
             FIN                 ; Go back to control mode
 ;
 ; 'DIM' command to dimension arrays
 ;
-S14:        TST     S18 'DIM'   ; Check for 'DIM'
+S13B:       TST     S18 'DIM'   ; Check for 'DIM'
 Z0:         TSTV    Z0          ; Get the next variable to dimension
 Z0A:        TST     Z0A '('     ; Opening bracket after the array name
             CALL    EXPR        ; Get the outer dimension
