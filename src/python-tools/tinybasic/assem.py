@@ -108,10 +108,7 @@ class Assembler:
                     # embedded spaces in the original.  Restore them.
                     s = " ".join(fields)
                     fields = fields[-1:]
-                    if s == '<CR>':
-                        # Special case for "check for end of line", used in TBX.
-                        s = '\r'
-                    elif s.startswith("'") and s.endswith("'"):
+                    if s.startswith("'") and s.endswith("'"):
                         s = s[1:-1]
                     elif s.startswith('"') and s.endswith('"'):
                         s = s[1:-1]

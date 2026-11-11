@@ -47,11 +47,6 @@ void tb_set_il(tb_state_t *state, const tb_il_program_t *il)
     state->pc = il->start;
 }
 
-void tb_clear_vars(tb_state_t *state)
-{
-    memset(state->vars, 0, sizeof(state->vars));
-}
-
 void tb_new(tb_state_t *state)
 {
     state->program[0] = 0;
@@ -91,6 +86,9 @@ void tb_error(tb_state_t *state, uint8_t error)
         "NEXT WITHOUT FOR",
         "SUBSCRIPT OUT OF RANGE",
         "REDIMENSIONED ARRAY",
+        "INVALID ARRAY DIMENSION",
+        "NOT AN ARRAY",
+        "TOO MANY FORS",
         "UNKNOWN ERROR"     /* Must be last in the array */
     };
     if (error >= (sizeof(errors) / sizeof(errors[0]))) {
@@ -210,6 +208,7 @@ void tb_push_sub(tb_state_t *state)
         }
         state->substk[state->substk_size].cursor = state->cursor;
         state->substk[state->substk_size].line_number = state->line_number;
+        state->substk[state->substk_size].var = 0;
         ++(state->substk_size);
     } else {
         tb_error(state, TB_E_GOSUB);
@@ -218,8 +217,12 @@ void tb_push_sub(tb_state_t *state)
 
 void tb_pop_sub(tb_state_t *state)
 {
-    if (state->substk_size > 0) {
+    while (state->substk_size > 0) {
         --(state->substk_size);
+        if (state->substk[state->substk_size].var != 0) {
+            /* This frame is for a "FOR" loop; ignore it */
+            continue;
+        }
         state->cursor = state->substk[state->substk_size].cursor;
         state->line_number = state->substk[state->substk_size].line_number;
         if (state->line_number == 0) {
@@ -229,9 +232,107 @@ void tb_pop_sub(tb_state_t *state)
             /* Continue executing from where we left off */
             state->pc = state->il->next;
         }
+    }
+    tb_error(state, TB_E_RETURN);
+}
+
+void tb_for
+    (tb_state_t *state, tb_value_t var, tb_value_t stop, tb_value_t step)
+{
+    tb_substk_item_t *item;
+    if (state->line_number == 0) {
+        /* Cannot do a FOR in direct mode */
+        tb_error(state, TB_E_DIRECT);
+        return;
+    }
+    if (state->substk_size < TB_MAX_SUBSTK) {
+        if (*(state->cursor) == 0) {
+            /* At the end of the line, skip forward to the next one */
+            tb_move_to_next(state);
+        }
+        item = &(state->substk[state->substk_size]);
+        item->cursor = state->cursor;
+        item->line_number = state->line_number;
+        item->var = var;
+        item->stop = stop;
+        item->step = step;
+        ++(state->substk_size);
     } else {
-        /* RETURN without GOSUB */
-        tb_error(state, TB_E_RETURN);
+        tb_error(state, TB_E_FOR);
+    }
+}
+
+/**
+ * @brief Pop the current location in the BASIC program from SUBSTK
+ * for a "GOSUB" statement.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ *
+ * This will call tb_error() and redirect IL program flow on stack underflow.
+ */
+static void tb_pop_for(tb_state_t *state)
+{
+    if (state->substk_size > 0) {
+        if (state->substk[state->substk_size - 1].var != 0) {
+            --(state->substk_size);
+        }
+    }
+}
+
+/**
+ * @brief Pop frames until a specific "FOR" loop is found on SUBSTK.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] var The variable of the "FOR" loop to find, or 0 for the
+ * next outermost "FOR" loop.
+ *
+ * @return A pointer to the SUBSTK item for the "FOR" loop, or NULL
+ * if the "FOR" loop corresponding to @a var could not be located.
+ */
+static tb_substk_item_t *tb_find_for(tb_state_t *state, tb_value_t var)
+{
+    tb_substk_item_t *item;
+    while (state->substk_size > 0) {
+        item = &(state->substk[state->substk_size - 1]);
+        if (item->var == 0) {
+            /* This frame is for a "RETURN".  "FOR" loop was not found. */
+            break;
+        }
+        if (!var || item->var == var) {
+            /* We found the "FOR" loop we were looking for. */
+            return item;
+        }
+        --(state->substk_size);
+    }
+    return 0;
+}
+
+void tb_next_for(tb_state_t *state, tb_value_t var)
+{
+    tb_substk_item_t *item = tb_find_for(state, var);
+    if (item) {
+        tb_value_t value = tb_index(state, item->var);
+        if ((item->step >= 0 && value >= item->stop) ||
+                (item->step < 0 && value <= item->stop)) {
+            /* Last iteration of the "FOR" loop */
+            tb_pop_for(state);
+            tb_next(state);
+        } else {
+            /* Update the variable and do another iteration */
+            value += item->step;
+            tb_store(state, item->var, value);
+            state->cursor = item->cursor;
+            state->line_number = item->line_number;
+            if (state->line_number == 0) {
+                /* GOSUB was at the end of the program previously */
+                tb_end(state);
+            } else {
+                /* Continue executing from where we left off */
+                state->pc = state->il->next;
+            }
+        }
+    } else {
+        tb_error(state, TB_E_NEXTFOR);
     }
 }
 

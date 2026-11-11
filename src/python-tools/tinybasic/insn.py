@@ -82,4 +82,6 @@ instructions = {
     'SPCONE':   { 'code': 0x3D },
     'TAB':      { 'code': 0x3E, 'ae_stack': ['pop'] },
     'TSTA':     { 'code': 0x3F, 'args': ['label8'], 'ae_stack': ['push'] },
+    'TSTCR':    { 'code': 0x40, 'args': ['label8'] },
+    'STOREV':   { 'code': 0x41, 'ae_stack': ['pop'] },
 }

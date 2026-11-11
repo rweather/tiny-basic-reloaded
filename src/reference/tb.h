@@ -82,6 +82,8 @@ extern "C" {
 #define TB_I_SPCONE         0x3D    /**< Output a single space */
 #define TB_I_TAB            0x3E    /**< Output a number of space characters */
 #define TB_I_TSTA           0x3F    /**< Test if an array reference */
+#define TB_I_TSTCR          0x40    /**< Test for end of line / statement */
+#define TB_I_STOREV         0x41    /**< Store with no variable pop */
 
 /* Error codes from the original Tiny BASIC design */
 #define TB_E_SYNTAX         1       /**< Syntax error */
@@ -103,6 +105,9 @@ extern "C" {
 #define TB_E_NEXTFOR        14      /**< NEXT without FOR */
 #define TB_E_SUBSCRIPT      15      /**< Subscript out of range */
 #define TB_E_REDIM          16      /**< Redimensioned array */
+#define TB_E_INVDIM         17      /**< Invalid array dimension */
+#define TB_E_NOTARRAY       18      /**< Not an array */
+#define TB_E_FOR            19      /**< Too many FORs */
 
 /* Value types */
 #define TB_T_NUMBER         0       /**< Value is a number */
@@ -129,14 +134,41 @@ typedef struct
 } tb_il_program_t;
 
 /**
- * @brief Maximum size of the program storage area.
+ * @brief Header for an array variable.
+ *
+ * The "dim1" field is zero if the array is not dimensioned.
+ * The "dim2" field is zero if the array is 1D.
+ */
+typedef struct
+{
+    uint16_t dim1;          /**< Size of the first dimension */
+    uint16_t dim2;          /**< Size of the second dimension */
+    uint16_t offset;        /**< Offset to find the array storage */
+
+} tb_array_t;
+
+/**
+ * @brief Maximum size of the program storage area, which also includes the
+ * variable and array storage area.
  */
 #define TB_MAX_PROGRAM      32768
 
 /**
- * @brief Maximum number of variables.
+ * @brief Maximum number of plain variables.
  */
-#define TB_MAX_VARS         26
+#define TB_MAX_PLAIN_VARS   26
+
+/**
+ * @brief Maximum number of array variables.
+ */
+#define TB_MAX_ARRAY_VARS   26
+
+/**
+ * @brief Maximum reserved space for plain variables and array headers.
+ */
+#define TB_MAX_RESERVED     \
+    (TB_MAX_PLAIN_VARS * sizeof(tb_value_t) + \
+     TB_MAX_ARRAY_VARS * sizeof(tb_array_t))
 
 /**
  * @brief Maximum size of the control stack for IL subroutine return addresses.
@@ -175,6 +207,9 @@ typedef struct
 {
     uint8_t *cursor;        /**< Program position to return back to */
     uint16_t line_number;   /**< Line number to return back to */
+    tb_value_t var;         /**< Variable pointer for FOR, or NULL for RETURN */
+    tb_value_t stop;        /**< Stopping value for a FOR loop */
+    tb_value_t step;        /**< Step value for a FOR loop */
 
 } tb_substk_item_t;
 
@@ -185,7 +220,6 @@ typedef struct
 {
     uint8_t program[TB_MAX_PROGRAM];    /**< Program storage */
     unsigned program_size;              /**< Current program size */
-    tb_value_t vars[TB_MAX_VARS];       /**< Variables */
     const uint8_t *ctlstk[TB_MAX_CTLSTK]; /**< Control stack */
     unsigned ctlstk_size;               /**< Current size of CTLSTK */
     tb_value_t aestk[TB_MAX_AESTK];     /**< Arithmetic expression stack */
@@ -203,6 +237,9 @@ typedef struct
     uint8_t *input_cursor;              /**< Cursor for INPUT mode */
     uint8_t *search_cursor;             /**< Cursor for searching for a line */
     uint16_t search_line;               /**< Line number during a search */
+    uint16_t list1;                     /**< First line to list */
+    uint16_t list2;                     /**< Last line to list */
+    uint16_t next_alloc;                /**< Next byte for memory allocation **/
 
 } tb_state_t;
 
@@ -224,13 +261,6 @@ void tb_init(tb_state_t *state);
  * The object @a il must persist for the lifetime of the @a state object.
  */
 void tb_set_il(tb_state_t *state, const tb_il_program_t *il);
-
-/**
- * @brief Clear all variables.
- *
- * @param[in,out] state Tiny BASIC state.
- */
-void tb_clear_vars(tb_state_t *state);
 
 /**
  * @brief Clears the entire Tiny BASIC state for the "NEW" command.
@@ -308,7 +338,8 @@ void tb_push(tb_state_t *state, tb_value_t value);
 tb_value_t tb_pop(tb_state_t *state);
 
 /**
- * @brief Push the current location in the BASIC program onto SUBSTK.
+ * @brief Push the current location in the BASIC program onto SUBSTK
+ * for a "GOSUB" statement.
  *
  * @param[in,out] state Tiny BASIC state.
  *
@@ -317,13 +348,37 @@ tb_value_t tb_pop(tb_state_t *state);
 void tb_push_sub(tb_state_t *state);
 
 /**
- * @brief Pop the current location in the BASIC program from SUBSTK.
+ * @brief Pop the current location in the BASIC program from SUBSTK
+ * for a "GOSUB" statement.
  *
  * @param[in,out] state Tiny BASIC state.
  *
  * This will call tb_error() and redirect IL program flow on stack underflow.
  */
 void tb_pop_sub(tb_state_t *state);
+
+/**
+ * @brief Push the current location in the BASIC program onto SUBSTK
+ * for a "FOR" statement.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] var Points to the control variable for the "FOR" loop.
+ * @param[in] stop Stopping value for the "FOR" loop.
+ * @param[in] step Step value for the "FOR" loop.
+ *
+ * This will call tb_error() and redirect IL program flow on stack overflow.
+ */
+void tb_for
+    (tb_state_t *state, tb_value_t var, tb_value_t stop, tb_value_t step);
+
+/**
+ * @brief Perform the "NEXT" action at the bottom of a "FOR" loop.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] var The variable of the "FOR" loop, or 0 for the next
+ * outermost "FOR" loop.
+ */
+void tb_next_for(tb_state_t *state, tb_value_t var);
 
 /**
  * @brief Determine if a character is whitespace.
@@ -456,6 +511,98 @@ void tb_program_list_line(tb_state_t *state);
  * @param[in,out] state Tiny BASIC state.
  */
 void tb_program_list(tb_state_t *state);
+
+/**
+ * @brief Clear all variables.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ */
+void tb_clear_vars(tb_state_t *state);
+
+/**
+ * @brief Get a pointer reference to a plain variable.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] var_num Variable number between 0 and TB_MAX_PLAIN_VARS - 1.
+ *
+ * @return A reference to the plain variable, or 0 if @var_num is invalid.
+ */
+tb_value_t tb_get_plain_var(tb_state_t *state, int var_num);
+
+/**
+ * @brief Get a pointer reference to an array variable.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] var_num Variable number between 0 and TB_MAX_PLAIN_VARS - 1.
+ *
+ * @return A reference to the array variable, or 0 if @var_num is invalid
+ * or it has not been dimensioned as an array.
+ */
+tb_value_t tb_get_array_var(tb_state_t *state, int var_num);
+
+/**
+ * @brief Index a reference to a plain variable or an array element.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] ref Reference to the variable or array element.
+ *
+ * @return The value at the reference.
+ */
+tb_value_t tb_index(tb_state_t *state, tb_value_t ref);
+
+/**
+ * @brief Store to a reference to a plain variable or an array element.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] ref Reference to the variable or array element.
+ * @param[in] value The value to store.
+ */
+void tb_store(tb_state_t *state, tb_value_t ref, tb_value_t value);
+
+/**
+ * @brief Get a reference to an element in a 1D array.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] ref Reference to the array from tb_get_array_var().
+ * @param[in] index The index of the element.
+ *
+ * @return A reference to the element, or zero on error.
+ */
+tb_value_t tb_get_1d_element
+    (tb_state_t *state, tb_value_t ref, tb_value_t index);
+
+/**
+ * @brief Get a reference to an element in a 2D array.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] ref Reference to the array from tb_get_array_var().
+ * @param[in] index1 The index of the element for the outer dimension.
+ * @param[in] index2 The index of the element for the inner dimension.
+ *
+ * @return A reference to the element, or zero on error.
+ */
+tb_value_t tb_get_2d_element
+    (tb_state_t *state, tb_value_t ref, tb_value_t index1, tb_value_t index2);
+
+/**
+ * @brief Allocate space for a 1D array.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] ref Reference to the array from tb_get_array_var().
+ * @param[in] dim The size of the array.
+ */
+void tb_dim_1d(tb_state_t *state, tb_value_t ref, tb_value_t dim);
+
+/**
+ * @brief Allocate space for a 2D array.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] ref Reference to the array from tb_get_array_var().
+ * @param[in] dim1 The size of the array's outer dimension.
+ * @param[in] dim2 The size of the array's inner dimension.
+ */
+void tb_dim_2d
+    (tb_state_t *state, tb_value_t ref, tb_value_t dim1, tb_value_t dim2);
 
 #ifdef __cplusplus
 }

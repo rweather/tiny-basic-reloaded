@@ -66,6 +66,8 @@ syn match   ilOpcode            "\<SIZE\>"
 syn match   ilOpcode            "\<SPCONE\>"
 syn match   ilOpcode            "\<TAB\>"
 syn match   ilOpcode            "\<TSTA\>"
+syn match   ilOpcode            "\<TSTCR\>"
+syn match   ilOpcode            "\<STOREV\>"
 
 syn match   ilString            /'[^']*'/
 

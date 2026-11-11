@@ -9,8 +9,9 @@ OBJECTS = \
 	tb-main.o \
 	tb-exec.o \
 	tb-program.o \
-	tb-state.o
-TARGET = tiny-basic-redo
+	tb-state.o \
+	tb-vars.o
+TARGET = tiny-basic-reloaded
 
 all: $(TARGET)
 
@@ -28,6 +29,9 @@ tb-program.o: tb-program.c tb.h
 
 tb-state.o: tb-state.c tb.h
 	$(CC) $(CFLAGS) -o tb-state.o -c tb-state.c
+
+tb-vars.o: tb-vars.c tb.h
+	$(CC) $(CFLAGS) -o tb-vars.o -c tb-vars.c
 
 tb-bytecode-original.h: ../IL/tiny-basic-original.il
 	$(ILTOBYTECODE) -c tb_original tb-bytecode-original.h ../IL/tiny-basic-original.il

@@ -125,7 +125,11 @@ static int tb_match_variable(tb_state_t *state, int is_array)
         state->cursor = cursor;
 
         /* Push the variable index onto the stack and return */
-        tb_push(state, index);
+        if (is_array) {
+            tb_push(state, tb_get_array_var(state, index));
+        } else {
+            tb_push(state, tb_get_plain_var(state, index));
+        }
         return 1;
     }
     return 0;
@@ -372,6 +376,30 @@ static void tb_input(tb_state_t *state, int type)
     }
 }
 
+/**
+ * @brief Pop a line number from AESTK and verify it.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[out] line_number Returns the line number.
+ *
+ * @return Non-zero if the line number is valid, zero on error.
+ *
+ * We allow a line number of zero to indicate "all", so that "LIST n-0"
+ * will list "n" and all following lines, and so that "LIST 0-n" will
+ * list all lines up to "n".  These can also be entered as "LIST n-" and
+ * "LIST -n" as commands.
+ */
+static int tb_pop_line_number(tb_state_t *state, uint16_t *line_number)
+{
+    tb_value_t line = tb_pop(state);
+    *line_number = (uint16_t)line;
+    if (line < 0 || line > TB_MAX_LINE_NUMBER) {
+        tb_error(state, TB_E_INVLINE);
+        return 0;
+    }
+    return 1;
+}
+
 void tb_exec_one(tb_state_t *state)
 {
     uint8_t insn;
@@ -562,11 +590,7 @@ void tb_exec_one(tb_state_t *state)
         /* Store to a variable whose index is on the stack */
         y = tb_pop(state);
         x = tb_pop(state);
-        if (x >= 0 && x < TB_MAX_VARS) {
-            state->vars[x] = y;
-        } else {
-            tb_error(state, TB_E_SYNTAX);
-        }
+        tb_store(state, x, y);
         break;
 
     case TB_I_TSTV:
@@ -628,11 +652,7 @@ void tb_exec_one(tb_state_t *state)
     case TB_I_IND:
         /* Index a variable to get its value */
         x = tb_pop(state);
-        if (x >= 0 && x < TB_MAX_VARS) {
-            tb_push(state, state->vars[x]);
-        } else {
-            tb_error(state, TB_E_SYNTAX);
-        }
+        tb_push(state, tb_index(state, x));
         break;
 
     /*
@@ -640,48 +660,67 @@ void tb_exec_one(tb_state_t *state)
      */
 
     case TB_I_ARRAY1:
-        /* Index into a 1D array */
-        // TODO
+        /* Index into a 1D array to find a pointer to the element */
+        y = tb_pop(state);
+        x = tb_pop(state);
+        tb_push(state, tb_get_1d_element(state, x, y));
         break;
 
     case TB_I_ARRAY2:
-        /* Index into a 2D array */
-        // TODO
+        /* Index into a 2D array to find a pointer to the element */
+        y = tb_pop(state);
+        x = tb_pop(state);
+        tb_push(state, tb_get_2d_element(state, tb_pop(state), x, y));
         break;
 
     case TB_I_DIM1:
         /* Dimension a 1D array */
-        // TODO
+        x = tb_pop(state);
+        tb_dim_1d(state, tb_pop(state), x);
         break;
 
     case TB_I_DIM2:
         /* Dimension a 2D array */
-        // TODO
+        y = tb_pop(state);
+        x = tb_pop(state);
+        tb_dim_2d(state, tb_pop(state), x, y);
         break;
 
     case TB_I_FOR:
         /* Mark the start of a "FOR" loop */
-        // TODO
+        y = tb_pop(state);
+        x = tb_pop(state);
+        tb_for(state, tb_pop(state), x, y);
         break;
 
     case TB_I_NEXT:
         /* "NEXT" at the end of a "FOR" loop */
-        // TODO
+        tb_next_for(state, tb_pop(state));
         break;
 
     case TB_I_LIST0:
         /* Set up to list the entire BASIC program when 'LST' is used */
-        // TODO
+        state->list1 = 0;
+        state->list2 = 0;
         break;
 
     case TB_I_LIST1:
         /* Set up to list a single line when 'LST' is used */
-        // TODO
+        if (tb_pop_line_number(state, &(state->list1))) {
+            state->list2 = state->list1;
+        } else {
+            state->list1 = 0;
+            state->list2 = 0;
+        }
         break;
 
     case TB_I_LIST2:
         /* Set up to list a range of lines when 'LST' is used */
-        // TODO
+        if (!tb_pop_line_number(state, &(state->list2)) ||
+                !tb_pop_line_number(state, &(state->list1))) {
+            state->list1 = 0;
+            state->list2 = 0;
+        }
         break;
 
     case TB_I_RANDOM:
@@ -691,8 +730,8 @@ void tb_exec_one(tb_state_t *state)
 
     case TB_I_SIZE:
         /* Print memory sizes */
-        printf("USED: %5u BYTES\n", state->program_size);
-        printf("FREE: %5u BYTES\n", TB_MAX_PROGRAM - state->program_size);
+        printf("USED: %5u BYTES\n", state->next_alloc);
+        printf("FREE: %5u BYTES\n", TB_MAX_PROGRAM - state->next_alloc);
         break;
 
     case TB_I_SPCONE:
@@ -727,6 +766,28 @@ void tb_exec_one(tb_state_t *state)
                 state->pc = start + offset;
             }
         }
+        break;
+
+    case TB_I_TSTCR:
+        /* Test for the end of the line */
+        tb_skip_whitespace(state);
+        offset = (int8_t)(*(state->pc)++);
+        if (state->cursor[0] != 0) {
+            if (offset == 0) {
+                /* When TSTCR jumps back to itself, that means a syntax error */
+                tb_error(state, TB_E_SYNTAX);
+            } else {
+                state->pc = start + offset;
+            }
+        }
+        break;
+
+    case TB_I_STOREV:
+        /* Store to a variable, but don't pop the variable index */
+        y = tb_pop(state);
+        x = tb_pop(state);
+        tb_push(state, x);
+        tb_store(state, x, y);
         break;
 
     default:

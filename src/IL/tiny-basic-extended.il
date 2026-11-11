@@ -18,6 +18,8 @@
 ; statement ::=
 ;       "PR" expr-list                  ; 'PRINT'
 ;     | "IF" expression relop expression statement-list ; Note: No 'THEN'
+;     | "FOR" var "=" expression "TO" expression
+;     | "NXT" var                       ; 'NEXT'
 ;     | "GOTO" expression
 ;     | "IN" var-list                   ; 'INPUT'
 ;     | "LET" var "=" expression
@@ -79,8 +81,9 @@
 ;       Same as "DONE", but used in "GOSUB" to indicate that control
 ;       will be continuing somewhere else than the next statement.
 ; FOR
-;       Push the address of the next statement onto the AESTK so that
-;       "NEXT" knows where to jump back to when looping.
+;       Push a frame on the SUBSTK corresponding to the variable,
+;       stop value, step value on the AESTK, and the address of the
+;       next statement.
 ; LIST0
 ;       Set up so that when LST is invoked, the entire program is listed.
 ; LIST1
@@ -90,15 +93,8 @@
 ;       Set up so that when LST is invoked, a range of lines is listed.
 ;       The line numbers for the range are on the AESTK.
 ; NEXT
-;       The top of AESTK is assumed to be the address of the "FOR",
-;       the ending value for the loop, and the variable index.
-;       If the variable has met or exceeded the ending value, then
-;       pop everything and do "NXT".  Otherwise increment the
-;       variable, put the incremented value on the AESTK, set the
-;       next command pointer to the "FOR" address, and continue
-;       with the next IL instruction.  Note that no check is done to
-;       ensure that the top-most "FOR" is the same variable so mis-nested
-;       "FOR" loops will give unexpected results.
+;       Using the variable index on the top of the stack, find the
+;       corresponding "FOR" frame on SUBSTK and process it.
 ; NXTX
 ;       Same as "NXT" but used in the implementation of "PR" for some reason.
 ; RANDOM
@@ -107,6 +103,9 @@
 ;       Print memory size information.
 ; SPCONE
 ;       Output a single space.
+; STOREV
+;       Same as "STORE" but do not pop the variable pointer from AESTK,
+;       only the value.
 ; TAB
 ;       Output the number of spaces given by the top-most value on AESTK.
 ; TSTA label
@@ -114,6 +113,9 @@
 ;       This indicates an array reference.  If found, push to pointer to the
 ;       start of the array onto AESTK and skip the array name but not the
 ;       ')'.  Jump to "label" if not an array.
+; TSTCR label
+;       Skip whitespace and test if we are at the end of the line.
+;       Jump to "label" if not at the end of the line.
 ;
 ;-----------------------------------------------------------------------------
 ;
@@ -157,7 +159,7 @@ S2:         TST     S14 'SUB'   ; Check for 'GOSUB', failure is an error!
 ; GO n      List the single line n
 ; GO n,m    List the lines between n and m
 ;
-S14:        TST     S14A <CR>   ; Check for end of line; 'GO' with no arguments
+S14:        TSTCR   S14A        ; Check for end of line; 'GO' with no arguments
             LIST0               ; Set up to list the entire program
             LST                 ; List the entire program
             NXT                 ; Continue with the next statement
@@ -188,21 +190,20 @@ S3A:        TST     S4A 'FOR'   ; Check for 'FOR'
 S3C:        TSTV    S3C         ; Get the variable index for the loop
 S3D:        TST     S3D '='     ; Error if no '=' after the variable name
             CALL    EXPR        ; Get the starting value for the loop
-            STORE
+            STOREV              ; Store to the variable, but don't pop the var
 S3B:        TST     S3B 'TO'    ; Check for 'TO'
-            FOR                 ; Push a FOR loop context
             CALL    EXPR        ; Get the ending value for the loop
+            LIT     1           ; Push the default STEP of 1
             DONE                ; Check for end of statement
+            FOR                 ; Push a FOR loop context onto SUBSTK
             NXT                 ; Continue with the next statement
 ;
 ; 'NXT' statement (i.e. 'NEXT')
 ;
 S4A:        TST     S4 'NXT'    ; Check for 'NXT' (Standard BASIC: 'NEXT')
 S4B:        TSTV    S4B         ; Get the name of the for loop variable
-            NEXT                ; Perform the NEXT operation
-            STORE               ; Store back to the loop variable
             DONE                ; Check for end of statement
-            NXT                 ; Continue with the next statement
+            NEXT                ; Perform the NEXT operation
 ;
 ; 'PR' statement (i.e. 'PRINT')
 ;
@@ -211,7 +212,7 @@ S5:         TST     S8C '"'     ; Check for " to begin a string
             PRS                 ; Print the data enclosed in quotes
 S6:         TST     S7A ','     ; ',' means more to come and space to next zone
             SPC                 ; Space to next zone
-S7B:        TST     S5A <CR>    ; Check for end of line
+S7B:        TSTCR   S5A         ; Check for end of line
             NXT                 ; Continue with the next statement
 S7A:        TST     S7 ';'      ; ';' means more to come and space once
             SPCONE              ; Output a single space
@@ -221,7 +222,7 @@ S5A:        TST     S5A '$'     ; '$' at the end means no CR-LF
 S7:         NLINE               ; Write a CR-LF
             DONE                ; Check for end of statement
             NXT                 ; Continue with the next statement
-S8C:        TST     S8B <CR>    ; Check for end of line
+S8C:        TSTCR   S8B         ; Check for end of line
             NLINE               ; Write a CR-LF
             NXT                 ; Continue with the next statement
 S8B:        TST     S8 '$'      ; '$' at the start of an expression
@@ -259,7 +260,7 @@ S13:        TST     S13B 'END'  ; Check for 'END'
 ; 'DIM' command to dimension arrays
 ;
 S13B:       TST     S18 'DIM'   ; Check for 'DIM'
-Z0:         TSTV    Z0          ; Get the next variable to dimension
+Z0:         TSTA    Z0          ; Get the next variable to dimension
 Z0A:        TST     Z0A '('     ; Opening bracket after the array name
             CALL    EXPR        ; Get the outer dimension
             TST     Z1 ','      ; Do we have an inner dimension?
@@ -340,7 +341,7 @@ F4:         TSTA    F0          ; Do we have 'X(' for an array variable?
             IND                 ; Index into the array and get the value
 T2:         RTN                 ; Return to caller
 ;
-F0:         TSTV    F0          ; Test for variable
+F0:         TSTV    F1          ; Test for variable
             IND                 ; Load the variable's value onto the stack
             RTN
 ;
@@ -358,7 +359,7 @@ F3:         TST     F3 ')'      ; Every '(' has to have a ')'
 ;
 ARRAY:      TST     ARRAY '('   ; Expect '(' after the name of the array
             CALL    EXPR        ; Get the first dimension's index
-            TST     X1 ','      ; 1D or 2D array reference?
+            TST     X0 ','      ; 1D or 2D array reference?
             CALL    EXPR        ; Get the second dimension's index
 X1:         TST     X1 ')'      ; Expect ')' after the second index
             ARRAY2              ; Find the element in a 2D array

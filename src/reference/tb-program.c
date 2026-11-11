@@ -132,7 +132,7 @@ static int tb_program_do_insert
     (tb_state_t *state, uint16_t line_number, size_t size)
 {
     size_t offset;
-    if ((state->program_size + size) > TB_MAX_PROGRAM) {
+    if ((state->program_size + size) > (TB_MAX_PROGRAM - TB_MAX_RESERVED)) {
         return 0;
     }
     offset = state->search_cursor - state->program;
@@ -171,7 +171,8 @@ int tb_program_insert(tb_state_t *state, uint16_t line_number)
         if (cmp == 0) {
             /* Delete the current line before inserting the new one */
             size_t old_size = state->search_cursor[2];
-            if ((state->program_size + size - old_size) > TB_MAX_PROGRAM) {
+            if ((state->program_size + size - old_size) >
+                    (TB_MAX_PROGRAM - TB_MAX_RESERVED)) {
                 /* New line won't fit, so don't delete the old one */
                 return 0;
             }
@@ -191,8 +192,22 @@ void tb_program_list_line(tb_state_t *state)
 
 void tb_program_list(tb_state_t *state)
 {
+    uint16_t first = state->list1;
+    uint16_t last = state->list2;
+    state->list1 = 0;
+    state->list2 = 0;
     if (tb_program_start(state)) {
+        if (first != 0) {
+            while (state->search_line < first) {
+                if (!tb_program_next(state)) {
+                    return;
+                }
+            }
+        }
         do {
+            if (last != 0 && state->search_line > last) {
+                break;
+            }
             tb_program_list_line(state);
         } while (!(state->do_break) && tb_program_next(state));
     }
