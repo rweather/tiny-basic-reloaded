@@ -513,6 +513,33 @@ void tb_program_list_line(tb_state_t *state);
 void tb_program_list(tb_state_t *state);
 
 /**
+ * @brief Gets the number of free bytes in the program and variable space.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ *
+ * @return The number of free bytes.
+ */
+unsigned tb_program_get_free(tb_state_t *state);
+
+/**
+ * @brief Gets the number of used bytes in the program space.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ *
+ * @return The number of used bytes.
+ */
+unsigned tb_program_get_used_program(tb_state_t *state);
+
+/**
+ * @brief Gets the number of used bytes in the variable space.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ *
+ * @return The number of used bytes.
+ */
+unsigned tb_program_get_used_vars(tb_state_t *state);
+
+/**
  * @brief Clear all variables.
  *
  * @param[in,out] state Tiny BASIC state.

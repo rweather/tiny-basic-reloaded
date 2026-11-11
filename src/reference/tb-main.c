@@ -25,12 +25,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <signal.h>
 
 /* IL bytecode programs for the Tiny BASIC variants */
 #include "tb-bytecode-original.h"
 #include "tb-bytecode-extended.h"
 
 static tb_state_t tb;
+
+static void tb_sigint(int signum)
+{
+    (void)signum;
+    tb.do_break = 1;
+}
 
 int main(int argc, char **argv)
 {
@@ -49,15 +56,22 @@ int main(int argc, char **argv)
             name = "TINY BASIC";
         }
     }
+
+    /* Install a SIGINT handler to handle BREAK */
+    signal(SIGINT, tb_sigint);
+
+    /* Initialize the Tiny BASIC engine */
+    tb_init(&tb);
+    tb_set_il(&tb, il);
+
+    /* Print the header */
     printf("%s V1.0\n", name);
-    printf("%u BYTES FREE\n\n", TB_MAX_PROGRAM - 4);
+    printf("%u BYTES FREE\n\n", tb_program_get_free(&tb));
 
     /* Seed the libc system random number generator */
     srand(time(0));
 
-    /* Initialize the Tiny BASIC engine and start running */
-    tb_init(&tb);
-    tb_set_il(&tb, il);
+    /* Run the Tiny BASIC engine */
     while (!tb.eof_seen) {
         tb_exec_one(&tb);
     }

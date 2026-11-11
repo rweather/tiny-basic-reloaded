@@ -730,8 +730,9 @@ void tb_exec_one(tb_state_t *state)
 
     case TB_I_SIZE:
         /* Print memory sizes */
-        printf("USED: %5u BYTES\n", state->next_alloc);
-        printf("FREE: %5u BYTES\n", TB_MAX_PROGRAM - state->next_alloc);
+        printf("PROG: %5u BYTES\n", tb_program_get_used_program(state));
+        printf("VARS: %5u BYTES\n", tb_program_get_used_vars(state));
+        printf("FREE: %5u BYTES\n", tb_program_get_free(state));
         break;
 
     case TB_I_SPCONE:

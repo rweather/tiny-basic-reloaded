@@ -212,3 +212,18 @@ void tb_program_list(tb_state_t *state)
         } while (!(state->do_break) && tb_program_next(state));
     }
 }
+
+unsigned tb_program_get_free(tb_state_t *state)
+{
+    return TB_MAX_PROGRAM - state->next_alloc;
+}
+
+unsigned tb_program_get_used_program(tb_state_t *state)
+{
+    return state->program_size;
+}
+
+unsigned tb_program_get_used_vars(tb_state_t *state)
+{
+    return state->next_alloc - state->program_size;
+}
