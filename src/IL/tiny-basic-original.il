@@ -261,7 +261,8 @@ S16:        TST     S16 'CLEAR' ; Check for 'CLEAR'
 ;
 ; Interpretive language subroutines
 ;
-EXPR:       TST     E0 '-'      ; Test for unary '-'
+EXPR:       CHKSTK              ; Check for deep recursion
+            TST     E0 '-'      ; Test for unary '-'
             CALL    TERM        ; Put term on AESTK
             NEG                 ; Negate value on AESTK
             HOP     E1          ; Go get a term

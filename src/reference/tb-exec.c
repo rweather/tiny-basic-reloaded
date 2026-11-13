@@ -84,6 +84,58 @@ static int tb_match_string(tb_state_t *state)
 }
 
 /**
+ * @brief Match a string in the IL program against the program text,
+ * jumping to the destination if the match succeeds, continuing on failure.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ *
+ * @return Non-zero if there is a match, zero if no match.  In the case of a
+ * match, the program position is advanced past the match.
+ *
+ * The match string in the IL program must be in uppercase and be
+ * terminated with a character with the high bit set.
+ */
+static int tb_match_string_inverse(tb_state_t *state)
+{
+    uint8_t ch;
+    unsigned offset = 0;
+    unsigned pc_offset = 0;
+    unsigned end_offset = 0;
+    while ((state->pc[end_offset] & 0x80) == 0) {
+        ++end_offset;
+    }
+    ++end_offset;
+    while (((ch = state->pc[pc_offset]) & 0x80) == 0) {
+        if (ch == ' ') {
+            /* Allow multiple whitespace characters between words.
+             * This is not part of the original Tiny BASIC, but useful for
+             * extensions that have "ON ERR" and other multi-word commands. */
+            if (!tb_is_whitespace(state->cursor[offset])) {
+                state->pc += end_offset;
+                return 0;
+            }
+            ++offset;
+            while (tb_is_whitespace(state->cursor[offset])) {
+                ++offset;
+            }
+            continue;
+        } else if (!tb_match_char(ch, state->cursor[offset])) {
+            state->pc += end_offset;
+            return 0;
+        }
+        ++offset;
+        ++pc_offset;
+    }
+    ch &= 0x7F;
+    if (!tb_match_char(ch, state->cursor[offset])) {
+        state->pc += end_offset;
+        return 0;
+    }
+    state->cursor += offset + 1;
+    return 1;
+}
+
+/**
  * @brief Determine if the next token is a variable name.
  *
  * @param[in,out] state Tiny BASIC state.
@@ -400,6 +452,135 @@ static int tb_pop_line_number(tb_state_t *state, uint16_t *line_number)
     return 1;
 }
 
+/**
+ * @brief Apply a unary operator.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] opcode The operator to apply.
+ * @param[in] x The operand to apply the operator to.
+ *
+ * @return The result of applying the operator.
+ */
+static tb_value_t tb_apply1(tb_state_t *state, uint8_t opcode, tb_value_t x)
+{
+    switch (opcode) {
+    case TB_I_NEG:      return -x;
+    case TB_I_BNOT:     return ~x;
+    case TB_I_LNOT:     return !x;
+
+    case TB_I_RND:
+        if (x <= 0) {
+            /* Random number between 0 (inclusive) and 1 (exclusive) */
+            return 0;
+        } else {
+            /* Random number between 0 and x-1 */
+            return rand() * ((int64_t)x) / RAND_MAX;
+        }
+
+    case TB_I_PEEK:
+        /* This implementation ignores all PEEK's */
+        return 0;
+
+    default:
+        tb_error(state, TB_E_SYNTAX);
+        break;
+    }
+    return 0;
+}
+
+/**
+ * @brief Apply a binary operator.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] opcode The operator to apply.
+ * @param[in] x The first operand to apply the operator to.
+ * @param[in] y The second operand to apply the operator to.
+ *
+ * @return The result of applying the operator.
+ */
+static tb_value_t tb_apply2
+    (tb_state_t *state, uint8_t opcode, tb_value_t x, tb_value_t y)
+{
+    switch (opcode) {
+    case TB_I_ADD:      return x + y;
+    case TB_I_SUB:      return x - y;
+    case TB_I_MPY:      return x * y;
+    case TB_I_BAND:     return x & y;
+    case TB_I_BOR:      return x | y;
+    case TB_I_BXOR:     return x ^ y;
+    case TB_I_LAND:     return x && y;
+    case TB_I_LOR:      return x || y;
+    case TB_I_SHL:      return x << y;
+    case TB_I_SHR:      return x >> y;
+    case TB_I_LSR:      return ((uint16_t)x) >> y;
+    case TB_I_CMPEQ:    return x == y;
+    case TB_I_CMPNE:    return x != y;
+    case TB_I_CMPLT:    return x < y;
+    case TB_I_CMPGT:    return x > y;
+    case TB_I_CMPLE:    return x <= y;
+    case TB_I_CMPGE:    return x >= y;
+
+    case TB_I_DIV:
+        if (y != 0) {
+            return x / y;
+        }
+        tb_error(state, TB_E_DIVZERO);
+        break;
+
+    case TB_I_MOD:
+        if (y != 0) {
+            return x % y;
+        }
+        tb_error(state, TB_E_DIVZERO);
+        break;
+
+    default:
+        tb_error(state, TB_E_SYNTAX);
+        break;
+    }
+    return 0;
+}
+
+/**
+ * @brief Parse a literal string and return the ASCII code for the
+ * first character in it.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ *
+ * @return The ASCII character.
+ */
+static uint8_t tb_asc(tb_state_t *state)
+{
+    uint8_t ch, ch2;
+    tb_skip_whitespace(state);
+    if (*(state->cursor) != '"') {
+        tb_error(state, TB_E_SYNTAX);
+        return 0;
+    }
+    ++(state->cursor);
+    if (*(state->cursor) == '"') {
+        /* Empty string, return NUL */
+        ++(state->cursor);
+        return 0;
+    } else if (*(state->cursor) == 0) {
+        /* Unexpected end of line */
+        tb_error(state, TB_E_SYNTAX);
+        return 0;
+    }
+    ch = *(state->cursor)++;
+
+    /* Skip the rest of the string if more than one character */
+    while ((ch2 = *(state->cursor)) != '"') {
+        if (ch2 == 0) {
+            tb_error(state, TB_E_SYNTAX);
+            return 0;
+        }
+        ++(state->cursor);
+    }
+    ++(state->cursor);
+    return ch;
+}
+
 void tb_exec_one(tb_state_t *state)
 {
     uint8_t insn;
@@ -540,45 +721,42 @@ void tb_exec_one(tb_state_t *state)
         break;
 
     case TB_I_ERR:
+    case TB_I_CUSTOM:
         /* Report a syntax error and stop execution of the BASIC program */
         tb_error(state, TB_E_SYNTAX);
         break;
 
     case TB_I_ADD:
-        /* Add the values at the top of the AESTK and push the result */
-        y = tb_pop(state);
-        x = tb_pop(state);
-        tb_push(state, x + y);
-        break;
-
     case TB_I_SUB:
-        /* Subtract the values at the top of the AESTK and push the result */
+    case TB_I_MPY:
+    case TB_I_DIV:
+    case TB_I_MOD:
+    case TB_I_BAND:
+    case TB_I_BOR:
+    case TB_I_BXOR:
+    case TB_I_LAND:
+    case TB_I_LOR:
+    case TB_I_SHL:
+    case TB_I_SHR:
+    case TB_I_LSR:
+    case TB_I_CMPEQ:
+    case TB_I_CMPNE:
+    case TB_I_CMPLT:
+    case TB_I_CMPGT:
+    case TB_I_CMPLE:
+    case TB_I_CMPGE:
+        /* Apply a binary operator */
         y = tb_pop(state);
         x = tb_pop(state);
-        tb_push(state, x - y);
+        tb_push(state, tb_apply2(state, insn, x, y));
         break;
 
     case TB_I_NEG:
-        /* Negate the value at the top of the AESTK and push the result */
-        tb_push(state, -tb_pop(state));
-        break;
-
-    case TB_I_MPY:
-        /* Multiply the values at the top of the AESTK and push the result */
-        y = tb_pop(state);
-        x = tb_pop(state);
-        tb_push(state, x * y);
-        break;
-
-    case TB_I_DIV:
-        /* Divide the values at the top of the AESTK and push the result */
-        y = tb_pop(state);
-        x = tb_pop(state);
-        if (y != 0) {
-            tb_push(state, x / y);
-        } else {
-            tb_error(state, TB_E_DIVZERO);
-        }
+    case TB_I_BNOT:
+    case TB_I_LNOT:
+    case TB_I_RND:
+        /* Apply a unary operator */
+        tb_push(state, tb_apply1(state, insn, tb_pop(state)));
         break;
 
     case TB_I_LIT:
@@ -789,6 +967,135 @@ void tb_exec_one(tb_state_t *state)
         x = tb_pop(state);
         tb_push(state, x);
         tb_store(state, x, y);
+        break;
+
+    /*
+     * Tiny BASIC Reloaded instructions.
+     */
+
+    case TB_I_END:
+        /* Combines the effect of DONE and NXT */
+        tb_done(state);
+        tb_next(state);
+        break;
+
+    case TB_I_CHKSTK:
+        /* Check the size of CTLSTK for deep recursion.  We don't
+         * bother here because every "CALL" checks the stack depth.
+         * On actual hardware, we only need to check for expressions. */
+        break;
+
+    case TB_I_TSTJ:
+        /* Test the next token to see if it is a literal string; jump if true */
+        tb_skip_whitespace(state);
+        offset = *(state->pc)++;
+        offset |= ((int16_t)(*(state->pc)++)) << 8;
+        if (tb_match_string_inverse(state)) {
+            state->pc = start + offset;
+        }
+        break;
+
+    case TB_I_IF:
+        /* Go to the next line if the condition on AESTK is false */
+        if (tb_pop(state) == 0) {
+            tb_next(state);
+        }
+        break;
+
+    case TB_I_LIT16:
+        /* Push a literal 16-bit value onto the AESTK */
+        x = *(state->pc)++;
+        x |= ((int16_t)(*(state->pc)++)) << 8;
+        tb_push(state, x);
+        break;
+
+    case TB_I_PRC:
+        /* Print a single character based on its integer code */
+        fputc(tb_pop(state) & 0xFF, stdout);
+        fflush(stdout);
+        break;
+
+    case TB_I_TSTEND:
+        /* Test for the end of the statement */
+        tb_skip_whitespace(state);
+        offset = (int8_t)(*(state->pc)++);
+        if (state->cursor[0] != 0 && state->cursor[0] != ':') {
+            if (offset == 0) {
+                /* When TSTEND jumps back to itself, report a syntax error */
+                tb_error(state, TB_E_SYNTAX);
+            } else {
+                state->pc = start + offset;
+            }
+        }
+        break;
+
+    case TB_I_TSTOP:
+        /* Test for an operator */
+        tb_skip_whitespace(state);
+        offset = (int8_t)(*(state->pc)++);
+        insn = *(state->pc)++;
+        if (tb_match_string_inverse(state)) {
+            /* Push the opcode for APPLY* to use later and jump */
+            tb_push(state, insn);
+            state->pc = start + offset;
+        }
+        break;
+
+    case TB_I_APPLY:
+        /* Apply a binary operator */
+        y = tb_pop(state);
+        x = tb_pop(state);
+        tb_push(state, tb_apply2(state, x, tb_pop(state), y));
+        break;
+
+    case TB_I_APPLYFN:
+        /* Apply a unary function */
+        x = tb_pop(state);
+        tb_push(state, tb_apply1(state, tb_pop(state), x));
+        break;
+
+    case TB_I_CUSTFN:
+        /* Parse custom functions; nothing to do except skip the label */
+        ++(state->pc);
+        break;
+
+    case TB_I_ASC:
+        /* Convert the first character in a string into an ASCII code */
+        tb_push(state, tb_asc(state));
+        break;
+
+    case TB_I_POKE:
+        /* This implementation ignores all POKE's */
+        tb_pop(state);
+        tb_pop(state);
+        break;
+
+    case TB_I_POP:
+        /* Pop the top-most RETURN from the GOSUB stack */
+        tb_discard_sub(state);
+        break;
+
+    case TB_I_MCALL:
+        /* This implementation ignores all machine language calls */
+        tb_pop(state);
+        break;
+
+    case TB_I_CLEAR:
+        /* Clear all variables */
+        tb_clear_vars(state);
+        break;
+
+    case TB_I_LOAD:
+        /* Load program, not implemented yet */
+        break;
+
+    case TB_I_SAVE:
+        /* Save program, not implemented yet */
+        break;
+
+    case TB_I_INKEY:
+        /* Input a keystroke without waiting, not implemented yet */
+        tb_push(state, -1);
         break;
 
     default:

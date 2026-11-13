@@ -30,6 +30,7 @@
 /* IL bytecode programs for the Tiny BASIC variants */
 #include "tb-bytecode-original.h"
 #include "tb-bytecode-extended.h"
+#include "tb-bytecode-reloaded.h"
 
 static tb_state_t tb;
 
@@ -41,8 +42,8 @@ static void tb_sigint(int signum)
 
 int main(int argc, char **argv)
 {
-    const tb_il_program_t *il = &tb_original;
-    const char *name = "TINY BASIC";
+    const tb_il_program_t *il = &tb_reloaded;
+    const char *name = "TINY BASIC RELOADED";
 
     /* Parse the command-line arguments */
     if (argc > 1) {

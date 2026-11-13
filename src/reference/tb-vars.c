@@ -138,7 +138,8 @@ void tb_dim_1d(tb_state_t *state, tb_value_t ref, tb_value_t dim)
         tb_error(state, TB_E_REDIM);
     } else if (dim <= 0) {
         tb_error(state, TB_E_INVDIM);
-    } else if ((array->offset = tb_allocate(state, dim)) == 0) {
+    } else if ((array->offset = tb_allocate
+                    (state, ((int64_t)dim) + 1)) == 0) {
         tb_error(state, TB_E_MEMORY);
     } else {
         array->dim1 = dim;
@@ -156,7 +157,9 @@ void tb_dim_2d
         tb_error(state, TB_E_REDIM);
     } else if (dim1 <= 0 || dim2 <= 0) {
         tb_error(state, TB_E_INVDIM);
-    } else if ((array->offset = tb_allocate(state, ((int32_t)dim1) * dim2)) == 0) {
+    } else if ((array->offset = tb_allocate
+                    (state, (((int64_t)dim1) + 1) *
+                            (((int64_t)dim2) + 1))) == 0) {
         tb_error(state, TB_E_MEMORY);
     } else {
         array->dim1 = dim1;

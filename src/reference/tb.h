@@ -85,6 +85,48 @@ extern "C" {
 #define TB_I_TSTCR          0x40    /**< Test for end of line / statement */
 #define TB_I_STOREV         0x41    /**< Store with no variable pop */
 
+/* Instructions for Tiny BASIC Reloaded */
+#define TB_I_END            0x50    /**< Combines the effect of DONE and NXT */
+#define TB_I_CHKSTK         0x51    /**< Check the stack for deep recursion */
+#define TB_I_TSTJ           0x52    /**< Test and jump if true */
+#define TB_I_IF             0x53    /**< Pop condition and test it */
+#define TB_I_LIT16          0x54    /**< 16-bit literal */
+#define TB_I_CUSTOM         0x55    /**< Dispatch custom commands */
+#define TB_I_PRC            0x56    /**< Print a single character */
+#define TB_I_TSTEND         0x57    /**< Test for the end of the statement */
+#define TB_I_TSTOP          0x58    /**< Test for an operator */
+#define TB_I_APPLY          0x59    /**< Apply a binary operator */
+#define TB_I_APPLYFN        0x5A    /**< Apply a unary function */
+#define TB_I_CUSTFN         0x5B    /**< Custom extension function */
+#define TB_I_ASC            0x5C    /**< Get the ASCII code for a character */
+#define TB_I_POKE           0x5D    /**< Poke a memory location */
+#define TB_I_POP            0x5E    /**< Pop the top-most RETURN */
+#define TB_I_MCALL          0x5F    /**< Call a machine language routine */
+#define TB_I_CLEAR          0x60    /**< Clear all variables */
+#define TB_I_LOAD           0x61    /**< Load program */
+#define TB_I_SAVE           0x62    /**< Save program */
+#define TB_I_INKEY          0x63    /**< Input a keystroke without waiting */
+
+#define TB_I_BAND           0x70    /**< Bitwise AND */
+#define TB_I_BOR            0x71    /**< Bitwise OR */
+#define TB_I_BXOR           0x72    /**< Bitwise XOR */
+#define TB_I_BNOT           0x73    /**< Bitwise NOT */
+#define TB_I_LAND           0x74    /**< Logical AND */
+#define TB_I_LOR            0x75    /**< Logical OR */
+#define TB_I_LNOT           0x76    /**< Logical NOT */
+#define TB_I_MOD            0x77    /**< Division producing a remainder */
+#define TB_I_SHL            0x78    /**< Shift left */
+#define TB_I_SHR            0x79    /**< Arithmetic shift right */
+#define TB_I_LSR            0x7A    /**< Logical shift right */
+#define TB_I_RND            0x7B    /**< Generate a random number */
+#define TB_I_CMPEQ          0x7C    /**< Compare numbers for equality */
+#define TB_I_CMPNE          0x7D    /**< Compare numbers for inequality */
+#define TB_I_CMPLT          0x7E    /**< Compare numbers for less than */
+#define TB_I_CMPGT          0x7F    /**< Compare numbers for greater than */
+#define TB_I_CMPLE          0x80    /**< Compare numbers for less or equal */
+#define TB_I_CMPGE          0x81    /**< Compare numbers for greater or equal */
+#define TB_I_PEEK           0x82    /**< Peek a memory location */
+
 /* Error codes from the original Tiny BASIC design */
 #define TB_E_SYNTAX         1       /**< Syntax error */
 #define TB_E_MISSING        2       /**< Missing line */
@@ -356,6 +398,15 @@ void tb_push_sub(tb_state_t *state);
  * This will call tb_error() and redirect IL program flow on stack underflow.
  */
 void tb_pop_sub(tb_state_t *state);
+
+/**
+ * @brief Discard the top-most return address from SUBSTK.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ *
+ * This will call tb_error() and redirect IL program flow on stack underflow.
+ */
+void tb_discard_sub(tb_state_t *state);
 
 /**
  * @brief Push the current location in the BASIC program onto SUBSTK

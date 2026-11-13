@@ -52,6 +52,7 @@ assem = assem.Assembler(args.input_filename)
 with open(args.input_filename, 'r') as file:
     for line in file:
         assem.parse(line)
+    assem.check_undef()
 if assem.errors:
     sys.exit(1)
 
@@ -77,9 +78,9 @@ if args.c_source:
         file.write('};\n')
         file.write('static tb_il_program_t const %s = {\n' % name);
         file.write('    .start  = %s_code,\n' % name)
-        file.write('    .direct = %s_code + 2,\n' % name)
-        file.write('    .error  = %s_code + 1,\n' % name)
-        file.write('    .next   = %s_code + 9\n' % name)
+        file.write('    .direct = %s_code + %d,\n' % (name, assem.get_label_address('C0')))
+        file.write('    .error  = %s_code + %d,\n' % (name, assem.get_label_address('ERRENT')))
+        file.write('    .next   = %s_code + %d\n' % (name, assem.get_label_address('XEC')))
         file.write('};\n')
 else:
     # Output the IL in binary.

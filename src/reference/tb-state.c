@@ -132,6 +132,7 @@ static void tb_move_to_next(tb_state_t *state)
     state->line_number = state->cursor[0];
     state->line_number += ((uint16_t)(state->cursor[1])) << 8;
     state->cursor += 3;
+    state->colon_mode = 0;
 }
 
 void tb_next(tb_state_t *state)
@@ -205,6 +206,7 @@ void tb_push_sub(tb_state_t *state)
         if (*(state->cursor) == 0) {
             /* At the end of the line, skip forward to the next one */
             tb_move_to_next(state);
+            state->colon_mode = 1;
         }
         state->substk[state->substk_size].cursor = state->cursor;
         state->substk[state->substk_size].line_number = state->line_number;
@@ -223,6 +225,7 @@ void tb_pop_sub(tb_state_t *state)
             /* This frame is for a "FOR" loop; ignore it */
             continue;
         }
+        state->colon_mode = 0;
         state->cursor = state->substk[state->substk_size].cursor;
         state->line_number = state->substk[state->substk_size].line_number;
         if (state->line_number == 0) {
@@ -231,6 +234,18 @@ void tb_pop_sub(tb_state_t *state)
         } else {
             /* Continue executing from where we left off */
             state->pc = state->il->next;
+        }
+        return;
+    }
+    tb_error(state, TB_E_RETURN);
+}
+
+void tb_discard_sub(tb_state_t *state)
+{
+    while (state->substk_size > 0) {
+        --(state->substk_size);
+        if (state->substk[state->substk_size].var == 0) {
+            return;
         }
     }
     tb_error(state, TB_E_RETURN);
@@ -249,6 +264,7 @@ void tb_for
         if (*(state->cursor) == 0) {
             /* At the end of the line, skip forward to the next one */
             tb_move_to_next(state);
+            state->colon_mode = 1;
         }
         item = &(state->substk[state->substk_size]);
         item->cursor = state->cursor;
@@ -323,8 +339,9 @@ void tb_next_for(tb_state_t *state, tb_value_t var)
             tb_store(state, item->var, value);
             state->cursor = item->cursor;
             state->line_number = item->line_number;
+            state->colon_mode = 0;
             if (state->line_number == 0) {
-                /* GOSUB was at the end of the program previously */
+                /* FOR was at the end of the program previously */
                 tb_end(state);
             } else {
                 /* Continue executing from where we left off */

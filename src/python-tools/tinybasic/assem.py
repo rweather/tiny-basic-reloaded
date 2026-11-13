@@ -48,6 +48,9 @@ class Assembler:
 
         # Strip out comments.
         comment = line.find(';')
+        if comment > 0 and line[comment - 1] == "'" and line[comment + 1] == "'":
+            # We may have the token ';' on the line, which is not a comment.
+            comment = line.find(';', comment + 2)
         if comment != -1:
             line = line[:comment]
 
@@ -59,7 +62,7 @@ class Assembler:
 
         # Does the line start with one or more labels?
         label_name = ''
-        while fields[0].endswith(':'):
+        while len(fields) > 0 and fields[0].endswith(':'):
             label_name = fields[0][:-1].upper()
             if len(label_name) == 0:
                 self.error(self.filename, linenum, 'label name is empty')
@@ -116,11 +119,28 @@ class Assembler:
                         self.error(self.filename, linenum, 'invalid string format')
                         return
                     icode[arg_type] = s
+                elif arg_type == 'opcode':
+                    # Opcode name.
+                    opcode_name = fields[0].upper()
+                    if opcode_name in insn.instructions:
+                        icode[arg_type] = insn.instructions[opcode_name]['code']
+                    else:
+                        self.error(self.filename, linenum, 'invalid opcode name')
+                        return
                 elif arg_type == 'literal8':
                     try:
                         val = int(fields[0], 0)
                         if val < 0 or val > 255:
                             self.error(self.filename, linenum, 'literal byte value out of range')
+                        icode[arg_type] = val
+                    except (ValueError, TypeError):
+                        self.error(self.filename, linenum, 'invalid number "%s"' % fields[0])
+                        return
+                elif arg_type == 'literal16':
+                    try:
+                        val = int(fields[0], 0)
+                        if val < -32768 or val > 32767:
+                            self.error(self.filename, linenum, 'literal value out of range')
                         icode[arg_type] = val
                     except (ValueError, TypeError):
                         self.error(self.filename, linenum, 'invalid number "%s"' % fields[0])
@@ -142,8 +162,8 @@ class Assembler:
     Check for labels that were not defined in the source.
     '''
     def check_undef(self):
-        for label in self.values():
-            if not label['defined']:
+        for label in self.labels.values():
+            if not label['is_defined']:
                 self.error(label['filename'], label['linenum'], 'label "%s" is not defined' % label['name'])
 
     '''
@@ -216,9 +236,9 @@ class Assembler:
             size = 1
             if 'args' in info:
                 for arg_type in info['args']:
-                    if arg_type == 'label8' or arg_type == 'literal8':
+                    if arg_type == 'label8' or arg_type == 'literal8' or arg_type == 'opcode':
                         size += 1
-                    elif arg_type == 'label16':
+                    elif arg_type == 'label16' or arg_type == 'literal16':
                         size += 2
                     elif arg_type == 'string':
                         size += len(icode['string'])
@@ -256,7 +276,23 @@ class Assembler:
                                 # Last character has the high bit set.
                                 c += 128
                             bytecode.append(c)
+                    elif arg_type == 'opcode':
+                        # Opcode number.
+                        bytecode.append(icode['opcode'])
                     elif arg_type == 'literal8':
                         # Literal 8-bit constant.
                         bytecode.append(icode['literal8'])
+                    elif arg_type == 'literal16':
+                        # Literal 16-bit constant.
+                        lit = icode['literal16']
+                        bytecode.append(lit & 255)
+                        bytecode.append((lit >> 8) & 255)
         return bytecode
+
+    '''
+    Get the address of a specific label.
+    '''
+    def get_label_address(self, name):
+        if name in self.labels:
+            return self.labels[name]['address']
+        return -1

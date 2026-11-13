@@ -13,12 +13,17 @@ OBJECTS = \
 	tb-vars.o
 TARGET = tiny-basic-reloaded
 
+BYTECODE_DEPS = \
+	tb-bytecode-original.h \
+	tb-bytecode-extended.h \
+	tb-bytecode-reloaded.h
+
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
 	$(CC) $(LDFLAGS) -o $(TARGET) $(OBJECTS)
 
-tb-main.o: tb-main.c tb.h tb-bytecode-original.h tb-bytecode-extended.h
+tb-main.o: tb-main.c tb.h $(BYTECODE_DEPS)
 	$(CC) $(CFLAGS) -o tb-main.o -c tb-main.c
 
 tb-exec.o: tb-exec.c tb.h
@@ -39,6 +44,8 @@ tb-bytecode-original.h: ../IL/tiny-basic-original.il
 tb-bytecode-extended.h: ../IL/tiny-basic-extended.il
 	$(ILTOBYTECODE) -c tb_extended tb-bytecode-extended.h ../IL/tiny-basic-extended.il
 
+tb-bytecode-reloaded.h: ../IL/tiny-basic-reloaded.il
+	$(ILTOBYTECODE) -c tb_reloaded tb-bytecode-reloaded.h ../IL/tiny-basic-reloaded.il
+
 clean:
-	rm -f $(TARGET) $(OBJECTS)
-	rm -f tb-bytecode-original.h tb-bytecode-extended.h
+	rm -f $(TARGET) $(OBJECTS) $(BYTECODE_DEPS)

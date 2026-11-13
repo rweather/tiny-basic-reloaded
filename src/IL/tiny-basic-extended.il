@@ -14,7 +14,7 @@
 ; Language grammar:
 ;
 ; line ::= number statement-list <CR> | statement-list <CR>
-; statement-list ::= statement ("$" statement)
+; statement-list ::= statement ("$" statement)*
 ; statement ::=
 ;       "PR" expr-list                  ; 'PRINT'
 ;     | "IF" expression relop expression statement-list ; Note: No 'THEN'
@@ -122,15 +122,15 @@
 ; Top-level line collection routine
 ;
 STRT:       INIT                ; Initialize
-            NLINE               ; Write a CR-LF
-LNECLT:     GETLN               ; Write prompt and get a line
-            TSTL    XEQ         ; If no line number, go execute it
+ERRENT:     NLINE               ; Write a CR-LF
+C0:         GETLN               ; Write prompt and get a line
+            TSTL    XEC         ; If no line number, go execute it
             INSRT               ; Insert or delete the line
-            JMP     LNECLT      ; Loop for another line
+            JMP     C0          ; Loop for another line
 ;
 ; Statement executor
 ;
-XEQ:        XINIT               ; Initialize for execution
+XEC:        XINIT               ; Initialize for execution
 DIR:        TST     S1 'LET'    ; Check for 'LET'
             CALL    AVTEST      ; Get the variable reference
 S0:         TST     S0 '='      ; Error if no '=' after the variable name
@@ -300,7 +300,8 @@ S17:        TST     S17 'SZE'   ; Check for 'SZE'
 ; Parse and evaluate an expression
 ;
 EXPR1:      TST     EXPR '+'    ; Skip unary '+' if one is present
-EXPR:       TST     E0 '-'      ; Test for unary '-'
+EXPR:       CHKSTK              ; Check for deep recursion
+            TST     E0 '-'      ; Test for unary '-'
             CALL    TERM        ; Put term on AESTK
             NEG                 ; Negate value on AESTK
             JMP     E1          ; Go get a term
