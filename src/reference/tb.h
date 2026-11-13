@@ -24,6 +24,7 @@
 #define TB_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -495,6 +496,16 @@ void tb_call(tb_state_t *state, const uint8_t *new_pc);
  * @param[in,out] state Tiny BASIC state.
  */
 void tb_return(tb_state_t *state);
+
+/**
+ * @brief Normalize the input line to collapse multiple spaces and
+ * convert to uppercase.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ *
+ * @return The number of characters in the normalized line.
+ */
+size_t tb_normalize_line(tb_state_t *state);
 
 /**
  * @brief Start searching through the program line by line.

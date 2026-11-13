@@ -820,6 +820,7 @@ void tb_exec_one(tb_state_t *state)
         tb_getln(state);
         state->cursor = state->line;
         state->line_number = 0;
+        tb_normalize_line(state);
         break;
 
     case TB_I_LST:

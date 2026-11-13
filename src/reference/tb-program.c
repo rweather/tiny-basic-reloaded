@@ -86,7 +86,7 @@ int tb_program_find(tb_state_t *state, uint16_t line_number)
     return -1;
 }
 
-static size_t tb_normalize_line(tb_state_t *state)
+size_t tb_normalize_line(tb_state_t *state)
 {
     size_t size;
     size_t index;
