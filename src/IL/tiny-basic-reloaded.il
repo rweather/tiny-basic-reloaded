@@ -86,66 +86,6 @@
 ;
 ;-----------------------------------------------------------------------------
 ;
-; See "tiny-basic-original.il" and "tiny-basic-extended.il" for the
-; original TB and TBX instructions.  The following are the new instructions
-; that are unique to Tiny BASIC Reloaded.
-;
-; APPLY
-;       Pop three items from the AESTK and apply the operator in the middle.
-;       Used with TSTOP which pushes a reference to the operator to use.
-; APPLYFN
-;       Pop two items from the AESTK and apply the function in the second
-;       item down from the top.  Push the result of the function on AESTK.
-; ASC
-;       Parse a string and convert its first character to ASCII on AESTK.
-; BAND, BNOT, BOR, BXOR
-;       Bitwise AND, NOT, OR, and XOR operations.
-; CHKSTK
-;       Check if the CTLSTK has recursed too far due to a deep expression.
-; CLEAR
-;       Clear all variables from memory.
-; CMPEQ, CMPNE, CMPLT, CMPGT, CMPLE, CMPGE
-;       Perform a comparison and push the boolean result.
-; CUSTOM
-;       Handle any custom statements that aren't part of the standard language.
-; CUSTFN label
-;       Handle any custom functions and jump to the label if one is found.
-; END
-;       Combines the effect of "DONE" and "NXT" at the end of a statement.
-; IF
-;       Pop the top-most value from the AESTK and go to the next line
-;       in the program if the value is zero.  Otherwise continue.
-; LAND, LNOT, LOR
-;       Logical AND, NOT, and OR operations.
-; LIT16 value
-;       Push a literal 16-bit value onto the AESTK.
-; LOAD
-;       Loads the program from secondary storage like cassette tape.
-; MCALL
-;       Performs a machine-language call to the address on the AESTK.
-; MOD
-;       Divide the arguments on the stack and return the remainder.
-; PEEK
-;       Peek at the address on the top of AESTK and push the byte found there.
-; POKE
-;       Pop the address and value from the AESTK and poke the value.
-; PRC
-;       Pop a value from AESTK and print it as a character.
-; SAVE
-;       Saves the program to secondary storage like cassette tape.
-; SHL, SHR, LSR
-;       Perform a shift left, arithmetic shift right, or logical shift right.
-; TSTEND label
-;       Test for the end of the current statement and jump to the label if not.
-; TSTJ label string
-;       Similar to "TST", but jumps to the label if the string matches
-;       and falls through if the string does not match.
-; TSTOP label opcode string
-;       Test if the next token is "string".  If it is, push a reference to
-;       the handler for the IL "opcode" onto the AESTK and jump to "label".
-;
-;-----------------------------------------------------------------------------
-;
 ; Main command-line loop.
 ;
 START:      INIT                ; Initialize, clear program from mmemory

@@ -58,67 +58,6 @@
 ;
 ;-----------------------------------------------------------------------------
 ;
-; See "tiny-basic-original.il" for the original TB instructions.
-; The following are the new instructions that are unique to TBX.
-;
-; ARRAY1
-;       Get the pointer of an element to a 1D array.  The array index is
-;       on AESTK and the pointer to the array is just below that.
-;       Reports an error if the index is out of range.  Otherwise pops
-;       the two arguments and pushes a pointer to the array element.
-; ARRAY2
-;       Get the pointer of an element to a 2D array.  The array indices are
-;       on AESTK and the pointer to the array is just below that.
-;       Reports an error if the index is out of range.  Otherwise pops
-;       the three arguments and pushes a pointer to the array element.
-; DIM1
-;       Dimension a 1D array.  The size of the array is on the top of the
-;       AESTK and the variable reference is just below that on the AESTK.
-; DIM2
-;       Dimension a 2D array.  The size of the two dimensions are at the
-;       top of AESTK and the variable reference is just below that.
-; DONEX
-;       Same as "DONE", but used in "GOSUB" to indicate that control
-;       will be continuing somewhere else than the next statement.
-; FOR
-;       Push a frame on the SUBSTK corresponding to the variable,
-;       stop value, step value on the AESTK, and the address of the
-;       next statement.
-; LIST0
-;       Set up so that when LST is invoked, the entire program is listed.
-; LIST1
-;       Set up so that when LST is invoked, a single line is listed.
-;       The line number is on the AESTK.
-; LIST2
-;       Set up so that when LST is invoked, a range of lines is listed.
-;       The line numbers for the range are on the AESTK.
-; NEXT
-;       Using the variable index on the top of the stack, find the
-;       corresponding "FOR" frame on SUBSTK and process it.
-; NXTX
-;       Same as "NXT" but used in the implementation of "PR" for some reason.
-; RANDOM
-;       Generate a random number between 0 and 10000 and push it onto AESTK.
-; SIZE
-;       Print memory size information.
-; SPCONE
-;       Output a single space.
-; STOREV
-;       Same as "STORE" but do not pop the variable pointer from AESTK,
-;       only the value.
-; TAB
-;       Output the number of spaces given by the top-most value on AESTK.
-; TSTA label
-;       Test if the source consists of a variable name followed by '('.
-;       This indicates an array reference.  If found, push to pointer to the
-;       start of the array onto AESTK and skip the array name but not the
-;       ')'.  Jump to "label" if not an array.
-; TSTCR label
-;       Skip whitespace and test if we are at the end of the line.
-;       Jump to "label" if not at the end of the line.
-;
-;-----------------------------------------------------------------------------
-;
 ; Top-level line collection routine
 ;
 STRT:       INIT                ; Initialize
