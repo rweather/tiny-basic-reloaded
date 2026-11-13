@@ -73,8 +73,8 @@ int main(int argc, char **argv)
     srand(time(0));
 
     /* Run the Tiny BASIC engine */
-    while (!tb.eof_seen) {
+    while (!tb.exit_seen) {
         tb_exec_one(&tb);
     }
-    return 0;
+    return tb.exit_code;
 }

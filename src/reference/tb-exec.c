@@ -337,7 +337,8 @@ static void tb_getln(tb_state_t *state)
     /* Get the line of input */
     if (!fgets((char *)(state->line), sizeof(state->line), stdin)) {
         /* EOF encountered on this host */
-        state->eof_seen = 1;
+        state->exit_seen = 1;
+        state->exit_code = 0;
         state->line[0] = '\0';
         return;
     }
@@ -370,7 +371,7 @@ static void tb_input(tb_state_t *state, int type)
         if (!(state->input_cursor)) {
             /* No, get a new line */
             tb_getln(state);
-            if (state->eof_seen) {
+            if (state->exit_seen) {
                 /* Simulate an INPUT of empty/zero on EOF */
                 if (type == TB_T_STRING) {
                     state->line[0] = '\0';
@@ -1101,7 +1102,8 @@ void tb_exec_one(tb_state_t *state)
 
     case TB_I_EXIT:
         /* Exit back to the operating system with the status on AESTK */
-        exit(tb_pop(state) & 0xFF);
+        state->exit_seen = 1;
+        state->exit_code = (tb_pop(state) & 0xFF);
         break;
 
     default:

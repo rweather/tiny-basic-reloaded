@@ -291,7 +291,8 @@ typedef struct
     uint16_t line_number;               /**< Number of the current line */
     uint8_t colon_mode;                 /**< ":" separator seen during a DONE */
     uint8_t do_break;                   /**< BREAK has been detected */
-    uint8_t eof_seen;                   /**< EOF has been seen, exit BASIC */
+    uint8_t exit_seen;                  /**< Request to exit from BASIC */
+    uint8_t exit_code;                  /**< Exit code for the OS */
     uint8_t *input_cursor;              /**< Cursor for INPUT mode */
     uint8_t *search_cursor;             /**< Cursor for searching for a line */
     uint16_t search_line;               /**< Line number during a search */
