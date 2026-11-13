@@ -106,6 +106,7 @@ instructions = {
     'LOAD':     { 'code': 0x61 },
     'SAVE':     { 'code': 0x62 },
     'INKEY':    { 'code': 0x63, 'ae_stack': ['push'] },
+    'EXIT':     { 'code': 0x64, 'ae_stack': ['pop'], 'change_flow': True },
 
     'BAND':     { 'code': 0x70, 'ae_stack': ['pop2', 'push'] },
     'BOR':      { 'code': 0x71, 'ae_stack': ['pop2', 'push'] },

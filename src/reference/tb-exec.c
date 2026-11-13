@@ -1099,6 +1099,11 @@ void tb_exec_one(tb_state_t *state)
         tb_push(state, -1);
         break;
 
+    case TB_I_EXIT:
+        /* Exit back to the operating system with the status on AESTK */
+        exit(tb_pop(state) & 0xFF);
+        break;
+
     default:
         /* Unknown IL bytecode */
         tb_error(state, TB_E_IL);

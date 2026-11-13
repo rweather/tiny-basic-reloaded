@@ -143,6 +143,7 @@ STMT:       TSTJ    GOTO 'GOTO'
             TSTJ    LOAD 'LOAD'
             TSTJ    SAVE 'SAVE'
             TSTJ    PRINT '?'   ; Alias for 'PRINT'
+            TSTJ    EXIT 'EXIT'
 ;
 ; If we get here, the statement is not part of the standard language.
 ; Dispatch any custom commands that have been added to the interpreter.
@@ -338,6 +339,14 @@ LOAD:       LOAD                ; Perform the load
 ;
 SAVE:       SAVE                ; Perform the save
             END                 ; End of statement
+;
+; EXIT statement to quit BASIC back to the operating system.
+;
+EXIT:       TSTEND  EXIT1       ; Do we have an argument?
+            LIT     0           ; Default exit status of zero
+            EXIT                ; Exit back to the operating system
+EXIT1:      CALL    EXPR        ; Evaluate the exit status
+            EXIT                ; Exit back to the operating system
 ;
 ;-----------------------------------------------------------------------------
 ;

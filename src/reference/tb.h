@@ -107,6 +107,7 @@ extern "C" {
 #define TB_I_LOAD           0x61    /**< Load program */
 #define TB_I_SAVE           0x62    /**< Save program */
 #define TB_I_INKEY          0x63    /**< Input a keystroke without waiting */
+#define TB_I_EXIT           0x64    /**< Exit back to the operating system */
 
 #define TB_I_BAND           0x70    /**< Bitwise AND */
 #define TB_I_BOR            0x71    /**< Bitwise OR */
