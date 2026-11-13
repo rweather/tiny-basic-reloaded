@@ -300,7 +300,7 @@ LIST3:      TSTN LIST3          ; Is it "LIST n" or "LIST n-" or "LIST n-m"?
             JMP LIST6
 LIST4:      LIT16 31999         ; List from "n" to the maximum line
             LIST2
-            END
+            JMP LIST6
 LIST5:      LIST1               ; Just "LIST n"
 LIST6:      LST
             END
