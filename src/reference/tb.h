@@ -129,29 +129,43 @@ extern "C" {
 #define TB_I_CMPGE          0x81    /**< Compare numbers for greater or equal */
 #define TB_I_PEEK           0x82    /**< Peek a memory location */
 
-/* Error codes from the original Tiny BASIC design */
-#define TB_E_SYNTAX         1       /**< Syntax error */
-#define TB_E_MISSING        2       /**< Missing line */
-#define TB_E_INVLINE        3       /**< Invalid line number */
-#define TB_E_GOSUB          4       /**< Too many GOSUBs */
-#define TB_E_RETURN         5       /**< RETURN without GOSUB */
-#define TB_E_EXPR           6       /**< Expression too complex */
+/* Error codes that are compatible with TRS-80 Level II BASIC.
+ * Not all of these are in use at the moment.
+ *
+ * Note: "Formula too complex" is "String Formula Too Complex" in
+ * TRS-80 Level II BASIC, "Formula too complex" in AppleSoft BASIC, and
+ * "Expression too complex" in the original Tiny BASIC.  Combine them.
+ */
+#define TB_E_NEXTFOR        1       /**< NEXT without FOR */
+#define TB_E_SYNTAX         2       /**< Syntax error */
+#define TB_E_RETURN         3       /**< RETURN without GOSUB */
+#define TB_E_NODATA         4       /**< Out of data on INPUT or READ */
+#define TB_E_ILLFUNC        5       /**< Illegal function call */
+#define TB_E_OVERFLOW       6       /**< Overflow error */
 #define TB_E_MEMORY         7       /**< Out of memory */
-#define TB_E_DIVZERO        8       /**< Division by zero */
-
-/* Other error codes */
-#define TB_E_NONE           0       /**< No error */
-#define TB_E_OVERFLOW       9       /**< Overflow error */
-#define TB_E_DIRECT         10      /**< Illegal direct */
-#define TB_E_IL             11      /**< IL error */
-#define TB_E_NODATA         12      /**< Out of data on INPUT or READ */
+#define TB_E_INVLINE        8       /**< Invalid line number */
+#define TB_E_SUBSCRIPT      9       /**< Subscript out of range */
+#define TB_E_REDIM          10      /**< Redimensioned array */
+#define TB_E_DIVZERO        11      /**< Division by zero */
+#define TB_E_DIRECT         12      /**< Illegal direct */
 #define TB_E_TYPE           13      /**< Type mismatch */
-#define TB_E_NEXTFOR        14      /**< NEXT without FOR */
-#define TB_E_SUBSCRIPT      15      /**< Subscript out of range */
-#define TB_E_REDIM          16      /**< Redimensioned array */
-#define TB_E_INVDIM         17      /**< Invalid array dimension */
-#define TB_E_NOTARRAY       18      /**< Not an array */
-#define TB_E_FOR            19      /**< Too many FORs */
+#define TB_E_STRSPC         14      /**< Out of string space */
+#define TB_E_STRLONG        15      /**< String too long */
+#define TB_E_EXPR           16      /**< Formula too complex */
+#define TB_E_CANTCONT       17      /**< Cannot continue */
+#define TB_E_NORESUME       18      /**< No RESUME */
+#define TB_E_BADRESUME      19      /**< RESUME without error */
+#define TB_E_UNPRINT        20      /**< Unprintable error */
+#define TB_E_MISSING        21      /**< Missing operand */
+#define TB_E_BADFILE        22      /**< Bad file data */
+#define TB_E_DISKERR        23      /**< Disk BASIC error */
+
+/* Other error codes that are unique to this version of BASIC */
+#define TB_E_NONE           0       /**< No error */
+#define TB_E_GOSUB          24      /**< Too many GOSUBs */
+#define TB_E_FOR            25      /**< Too many FORs */
+#define TB_E_INVDIM         26      /**< Invalid array dimension */
+#define TB_E_NOTARRAY       27      /**< Not an array */
 
 /* Value types */
 #define TB_T_NUMBER         0       /**< Value is a number */

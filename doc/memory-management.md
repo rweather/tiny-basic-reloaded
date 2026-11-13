@@ -24,7 +24,7 @@ It stores return addresses for CALL instructions in the IL bytecode.
 
 The bytecode "CHKSTK" checks the size of the stack during expression
 evaluation to detect deep recursion.  If the CPU's stack is getting low,
-then report the "EXPRESSION TOO COMPLEX" error and abort program execution.
+then report the "FORMULA TOO COMPLEX" error and abort program execution.
 
 Expression evaulation can be up to 10 subroutine levels deep before the
 next level of recursion.  If "CHKSTK" detects that there is less than
@@ -104,7 +104,7 @@ The arithmetic expression stack is a stack of integer values that keeps
 track of in-progress values for expression evaluation.
 
 If AESTK overflows due to a push operation, report the
-"EXPRESSION TOO COMPLEX" error and abort program execution.
+"FORMULA TOO COMPLEX" error and abort program execution.
 
 Bytecode instructions that pop from the stack; e.g. ADD, can safely
 do so without checking for stack underflow.  The structure of the

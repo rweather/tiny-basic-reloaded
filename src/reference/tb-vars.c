@@ -133,7 +133,7 @@ void tb_dim_1d(tb_state_t *state, tb_value_t ref, tb_value_t dim)
 {
     tb_array_t *array = tb_get_array(state, ref);
     if (!array) {
-        tb_error(state, TB_E_IL);
+        tb_error(state, TB_E_ILLFUNC);
     } else if (array->dim1 != 0) {
         tb_error(state, TB_E_REDIM);
     } else if (dim <= 0) {
@@ -152,7 +152,7 @@ void tb_dim_2d
 {
     tb_array_t *array = tb_get_array(state, ref);
     if (!array) {
-        tb_error(state, TB_E_IL);
+        tb_error(state, TB_E_ILLFUNC);
     } else if (array->dim1 != 0) {
         tb_error(state, TB_E_REDIM);
     } else if (dim1 <= 0 || dim2 <= 0) {

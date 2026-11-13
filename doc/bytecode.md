@@ -196,7 +196,7 @@ will be discarded.
 ### CHKSTK
 
 Check if CTLSTK is full, indicating that recursion during expression
-evaluation is too deep.  Raise "EXPRESSION TOO COMPLEX" if CTLSTK is full.
+evaluation is too deep.  Raise "FORMULA TOO COMPLEX" if CTLSTK is full.
 
 The implementation can alternatively check the size of CTLSTK during "CALL".
 

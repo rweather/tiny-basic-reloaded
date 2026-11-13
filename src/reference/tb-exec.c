@@ -1106,7 +1106,7 @@ void tb_exec_one(tb_state_t *state)
 
     default:
         /* Unknown IL bytecode */
-        tb_error(state, TB_E_IL);
+        tb_error(state, TB_E_ILLFUNC);
         break;
     }
 }

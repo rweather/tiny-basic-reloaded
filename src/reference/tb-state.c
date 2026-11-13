@@ -69,32 +69,41 @@ void tb_xinit(tb_state_t *state)
 void tb_error(tb_state_t *state, uint8_t error)
 {
     static const char * const errors[] = {
-        "NO ERROR",
-        "SYNTAX ERROR",
-        "MISSING LINE NUMBER",
-        "INVALID LINE NUMBER",
-        "TOO MANY GOSUBS",
-        "RETURN WITHOUT GOSUB",
-        "EXPRESSION TOO COMPLEX",
-        "OUT OF MEMORY",
-        "DIVISION BY ZERO",
-        "OVERFLOW ERROR",
-        "ILLEGAL DIRECT",
-        "IL ERROR",
-        "OUT OF DATA",
-        "TYPE MISMATCH",
-        "NEXT WITHOUT FOR",
-        "SUBSCRIPT OUT OF RANGE",
-        "REDIMENSIONED ARRAY",
-        "INVALID ARRAY DIMENSION",
-        "NOT AN ARRAY",
-        "TOO MANY FORS",
-        "UNKNOWN ERROR"     /* Must be last in the array */
+        "NE", "NO ERROR",
+        "NF", "NEXT WITHOUT FOR",
+        "SN", "SYNTAX ERROR",
+        "RG", "RETURN WITHOUT GOSUB",
+        "OD", "OUT OF DATA",
+        "FC", "ILLEGAL FUNCTION CALL",
+        "OV", "OVERFLOW ERROR",
+        "OM", "OUT OF MEMORY",
+        "UL", "INVALID LINE NUMBER",
+        "BS", "SUBSCRIPT OUT OF RANGE",
+        "DD", "REDIMENSIONED ARRAY",
+        "/0", "DIVISION BY ZERO",
+        "ID", "ILLEGAL DIRECT",
+        "TM", "TYPE MISMATCH",
+        "OS", "OUT OF STRING SPACE",
+        "LS", "STRING TOO LONG",
+        "ST", "FORMULA TOO COMPLEX",
+        "CN", "CANNOT CONTINUE",
+        "NR", "NO RESUME",
+        "RW", "RESUME WITHOUT ERROR",
+        "UE", "UNPRINTABLE ERROR",
+        "MO", "MISSING OPERAND",
+        "FD", "BAD FILE DATA",
+        "L3", "DISK BASIC ERROR",
+        "TG", "TOO MANY GOSUBS",
+        "TF", "TOO MANY FORS",
+        "IA", "INVALID ARRAY DIMENSION",
+        "NA", "NOT AN ARRAY",
+        "??", "UNKNOWN ERROR"     /* Must be last in the array */
     };
-    if (error >= (sizeof(errors) / sizeof(errors[0]))) {
-        error = (sizeof(errors) / sizeof(errors[0])) - 1;
+    unsigned err = ((unsigned)error) * 2;
+    if (err >= (sizeof(errors) / sizeof(errors[0]))) {
+        err = (sizeof(errors) / sizeof(errors[0])) - 1;
     }
-    printf("\n%s", errors[error]);
+    printf("\n%s", errors[err + 1]);
     if (state->line_number) {
         printf(" AT LINE %d\n", (int)(state->line_number));
     } else {
@@ -437,6 +446,6 @@ void tb_return(tb_state_t *state)
         --(state->ctlstk_size);
         state->pc = state->ctlstk[state->ctlstk_size];
     } else {
-        tb_error(state, TB_E_IL);
+        tb_error(state, TB_E_ILLFUNC);
     }
 }
