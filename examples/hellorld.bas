@@ -1,0 +1,3 @@
+10 FOR I = 1 TO 10
+20 PRINT "Hellorld!"
+30 NEXT I
