@@ -467,7 +467,7 @@ static tb_value_t tb_apply1(tb_state_t *state, uint8_t opcode, tb_value_t x)
     case TB_I_BNOT:     return ~x;
     case TB_I_LNOT:     return !x;
 
-    case TB_I_RND:
+    case TB_I_RANDOM:
         if (x > 0) {
             /* Random number between 0 and x-1 */
             tb_value_t y = rand() * ((int64_t)x) / RAND_MAX;
@@ -760,7 +760,6 @@ void tb_exec_one(tb_state_t *state)
     case TB_I_NEG:
     case TB_I_BNOT:
     case TB_I_LNOT:
-    case TB_I_RND:
         /* Apply a unary operator */
         tb_push(state, tb_apply1(state, insn, tb_pop(state)));
         break;
@@ -911,8 +910,8 @@ void tb_exec_one(tb_state_t *state)
         break;
 
     case TB_I_RANDOM:
-        /* Generate a random number between 0 and 10000 and push onto AESTK */
-        tb_push(state, rand() % 10001);
+        /* Generate a random number between 0 and n-1 and push onto AESTK */
+        tb_push(state, tb_apply1(state, TB_I_RANDOM, tb_pop(state)));
         break;
 
     case TB_I_SIZE:

@@ -120,14 +120,13 @@ extern "C" {
 #define TB_I_SHL            0x78    /**< Shift left */
 #define TB_I_SHR            0x79    /**< Arithmetic shift right */
 #define TB_I_LSR            0x7A    /**< Logical shift right */
-#define TB_I_RND            0x7B    /**< Generate a random number */
+#define TB_I_PEEK           0x7B    /**< Peek a memory location */
 #define TB_I_CMPEQ          0x7C    /**< Compare numbers for equality */
 #define TB_I_CMPNE          0x7D    /**< Compare numbers for inequality */
 #define TB_I_CMPLT          0x7E    /**< Compare numbers for less than */
 #define TB_I_CMPGT          0x7F    /**< Compare numbers for greater than */
 #define TB_I_CMPLE          0x80    /**< Compare numbers for less or equal */
 #define TB_I_CMPGE          0x81    /**< Compare numbers for greater or equal */
-#define TB_I_PEEK           0x82    /**< Peek a memory location */
 
 /* Error codes that are compatible with TRS-80 Level II BASIC.
  * Not all of these are in use at the moment.

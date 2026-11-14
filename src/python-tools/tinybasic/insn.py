@@ -118,12 +118,11 @@ instructions = {
     'SHL':      { 'code': 0x78, 'ae_stack': ['pop2', 'push'] },
     'SHR':      { 'code': 0x79, 'ae_stack': ['pop2', 'push'] },
     'LSR':      { 'code': 0x7A, 'ae_stack': ['pop2', 'push'] },
-    'RND':      { 'code': 0x7B, 'ae_stack': ['pop', 'push'] },
+    'PEEK':     { 'code': 0x7B, 'ae_stack': ['pop', 'push'] },
     'CMPEQ':    { 'code': 0x7C, 'ae_stack': ['pop2', 'push'] },
     'CMPNE':    { 'code': 0x7D, 'ae_stack': ['pop2', 'push'] },
     'CMPLT':    { 'code': 0x7E, 'ae_stack': ['pop2', 'push'] },
     'CMPGT':    { 'code': 0x7F, 'ae_stack': ['pop2', 'push'] },
     'CMPLE':    { 'code': 0x80, 'ae_stack': ['pop2', 'push'] },
     'CMPGE':    { 'code': 0x81, 'ae_stack': ['pop2', 'push'] },
-    'PEEK':     { 'code': 0x82, 'ae_stack': ['pop', 'push'] },
 }

@@ -532,11 +532,6 @@ comes from a previous "TSTOP" instruction.
 
 ### RANDOM
 
-RANDOM pushes a random integer between 0 and 10000 on AESTK.  This is
-intended for Tiny BASIC Extended.  Use RND instead in newer code.
-
-### RND
-
 Pops the top value n from AESTK.  If n is zero or negative, then report
 the "ILLEGAL FUNCTION CALL" error.  Otherwise, generate a random integer
 between 0 and n-1 and push it onto AESTK.

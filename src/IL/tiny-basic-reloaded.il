@@ -483,7 +483,7 @@ INKEY:      INKEY               ; Input a keystroke without waiting
             RTN                 ; Return to the caller
 SEXPR4:     TSTJ    ASC 'ASC'   ; Check for 'ASC' which needs special handling
             TSTJ    INKEY 'INKEY' ; 'INKEY' also needs special handling
-            TSTOP   SEXPR3 RND 'RND' ; Check for other built-in functions
+            TSTOP   SEXPR3 RANDOM 'RND' ; Check for other built-in functions
             TSTOP   SEXPR3 PEEK 'PEEK'
             CUSTFN  SEXPR3      ; Check for custom functions that extend BASIC
             ; Fall through to BEXPR

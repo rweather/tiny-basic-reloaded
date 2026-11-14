@@ -268,7 +268,8 @@ T1:         TST     T2 '/'      ; Test for division
             JMP     T0          ; Loop around for more
 ;
 FACT:       TST     FN1 'RN'    ; Call to the random function?
-            RANDOM              ; Generate a random number
+            LIT     10001       ; Generate a random number
+            RANDOM              ; between 0 and 10000
             RTN                 ; Return to caller
 ;
 FN1:        TST     F4 'TB'     ; Call to the tab function?
