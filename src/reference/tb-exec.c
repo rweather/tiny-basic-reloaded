@@ -516,9 +516,6 @@ static tb_value_t tb_apply2
     case TB_I_BXOR:     return x ^ y;
     case TB_I_LAND:     return x && y;
     case TB_I_LOR:      return x || y;
-    case TB_I_SHL:      return x << y;
-    case TB_I_SHR:      return x >> y;
-    case TB_I_LSR:      return ((uint16_t)x) >> y;
     case TB_I_CMPEQ:    return x == y;
     case TB_I_CMPNE:    return x != y;
     case TB_I_CMPLT:    return x < y;
@@ -539,6 +536,30 @@ static tb_value_t tb_apply2
         }
         tb_error(state, TB_E_DIVZERO);
         break;
+
+    case TB_I_SHL:
+        if (y <= 0) {
+            return x;
+        } else if (y >= (tb_value_t)(sizeof(tb_value_t) * 8)) {
+            return 0;
+        }
+        return x << y;
+
+    case TB_I_SHR:
+        if (y <= 0) {
+            return x;
+        } else if (y >= (tb_value_t)(sizeof(tb_value_t) * 8)) {
+            return (x < 0) ? -1 : 0;
+        }
+        return x >> y;
+
+    case TB_I_LSR:
+        if (y <= 0) {
+            return x;
+        } else if (y >= (tb_value_t)(sizeof(tb_value_t) * 8)) {
+            return 0;
+        }
+        return ((uint16_t)x) >> y;
 
     default:
         tb_error(state, TB_E_SYNTAX);
