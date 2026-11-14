@@ -51,10 +51,14 @@ int main(int argc, char **argv)
             /* "-x" selects the Tiny BASIC Extended (TBX) version */
             il = &tb_extended;
             name = "TINY BASIC EXTENDED";
+            --argc;
+            ++argv;
         } else if (!strcmp(argv[1], "-o")) {
             /* "-o" selects the original Tiny BASIC version */
             il = &tb_original;
             name = "TINY BASIC";
+            --argc;
+            ++argv;
         }
     }
 
@@ -65,12 +69,22 @@ int main(int argc, char **argv)
     tb_init(&tb);
     tb_set_il(&tb, il);
 
-    /* Print the header */
-    printf("%s V1.0\n", name);
-    printf("%u BYTES FREE\n\n", tb_program_get_free(&tb));
-
     /* Seed the libc system random number generator */
     srand(time(0));
+
+
+    /* If there is a filename on the command-line, load that
+     * program and start running it immediately. */
+    if (argc > 1) {
+        if (!tb_program_load_from(&tb, argv[1])) {
+            return 1;
+        }
+        tb_run(&tb);
+    } else {
+        /* Print the header for interactive mode */
+        printf("%s V1.0\n", name);
+        printf("%u BYTES FREE\n\n", tb_program_get_free(&tb));
+    }
 
     /* Run the Tiny BASIC engine */
     while (!tb.exit_seen) {

@@ -629,7 +629,7 @@ unsigned tb_program_get_used_vars(tb_state_t *state);
  * @param[in,out] state Tiny BASIC state.
  * @param[in] filename Name of the file to load from.
  *
- * @return Non-zero if the load was successful, zero on error (in errno).
+ * @return Non-zero if the load was successful, zero on error.
  */
 int tb_program_load_from(tb_state_t *state, const char *filename);
 
@@ -646,7 +646,7 @@ void tb_program_load(tb_state_t *state);
  * @param[in,out] state Tiny BASIC state.
  * @param[in] filename Name of the file to save to.
  *
- * @return Non-zero if the save was successful, zero on error (in errno).
+ * @return Non-zero if the save was successful, zero on error.
  */
 int tb_program_save_to(tb_state_t *state, const char *filename);
 

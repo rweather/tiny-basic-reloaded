@@ -273,6 +273,7 @@ int tb_program_load_from(tb_state_t *state, const char *filename)
 {
     FILE *file = fopen(filename, "r");
     if (!file) {
+        perror(filename);
         return 0;
     }
     tb_new(state);
@@ -300,14 +301,14 @@ int tb_program_load_from(tb_state_t *state, const char *filename)
         if (!tb_match_number(state, 1, 0)) {
             tb_error(state, TB_E_SYNTAX);
             fclose(file);
-            return 1;
+            return 0;
         }
 
         /* Insert the line into the program */
         if (!tb_insert(state)) {
             /* Ran out of memory trying to load the program */
             fclose(file);
-            return 1;
+            return 0;
         }
     }
     fclose(file);
@@ -324,9 +325,7 @@ void tb_program_load(tb_state_t *state)
         if (!tb_get_filename(state, filename, sizeof(filename))) {
             tb_error(state, TB_E_INVFILENAME);
         } else {
-            if (!tb_program_load_from(state, filename)) {
-                perror(filename);
-            }
+            tb_program_load_from(state, filename);
         }
     } else if (state->cursor[0] != 0) {
         tb_error(state, TB_E_SYNTAX);
@@ -339,6 +338,7 @@ int tb_program_save_to(tb_state_t *state, const char *filename)
 {
     FILE *file = fopen(filename, "w");
     if (!file) {
+        perror(filename);
         return 0;
     }
     tb_program_list(file, state);
@@ -355,9 +355,7 @@ void tb_program_save(tb_state_t *state)
         if (!tb_get_filename(state, filename, sizeof(filename))) {
             tb_error(state, TB_E_INVFILENAME);
         } else {
-            if (!tb_program_save_to(state, filename)) {
-                perror(filename);
-            }
+            tb_program_save_to(state, filename);
         }
         tb_end(state);
     } else if (state->cursor[0] != 0) {
