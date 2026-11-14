@@ -8,7 +8,7 @@ Tiny BASIC Reloaded
 microcomputer enthusiasts pirating Microsoft's implementation of Altair BASIC.
 At the time, the microcomputer community was all about experimentation and
 sharing.  Gates' letter and charging for software in general was seen
-as an afront to the community spirit.  Which it was!
+as an afront to the community spirit.
 
 There is no single implementation of Tiny BASIC from the era.  And that's
 kind of the point.  Tiny BASIC is a specification for a minimal version of
@@ -43,9 +43,9 @@ You might find an old Fortran or ALGOL tape if you're lucky, but usually
 you will be stuck with assembly code.  Some of the machines are so old that
 memory constraints are an issue.
 
-Homebrew computers, built to similar designs as those in the 1970's,
-can also present issues.  If you are building your computer around an
-odd CPU or making a CPU from scratch in TTL logic or an FPGA,
+Homebrew computers, built to similar designs as those in the 1970's
+and 1980's, can also present issues.  If you are building your computer
+around an odd CPU or making a CPU from scratch in TTL logic or an FPGA,
 then your language options are limited without a lot of software work.
 
 A BASIC implementation that is very easy to port to odd architectures?  Useful.
@@ -57,16 +57,34 @@ And ... I like writing compilers and interpreters.  So why not?
 My implementation uses the original IL bytecode idea to write the core
 of the BASIC interpreter once.  And then automated machine translation
 is used to convert the bytecode into assembly code for the target
-architecture.  The bytecode is not interpreted; it is compiled.
+architecture.  The IL bytecode may be interpreted on the target, or it
+may be directly compiled to the target depending on space constraints.
 
-This approach produces more efficient code than interpreting IL bytecode
-at runtime, while reducing the implementation burden on new targets.
+This approach reduces the implementation burden of BASIC on new targets.
 To port to a target, the user need only supply I/O, memory management,
-a math library, and the automated translator.
+opcode helper functions, and the automated translator.
 
-This implementation also goes beyond "Tiny" with features from more
-featureful versions of BASIC.  New IL bytecode instructions are added to
-provide the extra functionality.
+This implementation goes beyond "Tiny" with features from more
+featureful versions of BASIC.  See the
+[Language Reference Manual](doc/language-reference.md) for
+more information on the available BASIC commands.
+
+Tiny BASIC Reloaded is integer only with 26 plain variables A to Z and
+26 arrays also named A to Z.  Arrays may have 1 or 2 dimensions.
+If you need more than 26 plain variables, you can dimension an array
+and refer to variables A(1), A(2), and so on.
+
+An implementation in C of the bytecode interpreter is provided under
+[src/reference](src/reference) to test changes to the language, and to
+provide a reference for the expected behaviour on real targets.
+The [IL Bytecode Reference](doc/bytecode.md) also describes the
+expected behaviour of each bytecode.
+
+## Documentation
+
+* [Language Reference Manual](doc/language-reference.md)
+* [IL Bytecode Reference](doc/bytecode.md)
+* [Memory Management](doc/memory-management.md)
 
 ## License
 
