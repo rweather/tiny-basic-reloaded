@@ -15,8 +15,8 @@ Expressions are at the heart of BASIC.  The simplest expressions are
 numbers, variables, and array element references:
 
     -42
-    x
-    a(6)
+    X
+    A(6)
 
 There are 26 variables named **A** to **Z** which contain an
 integer value.  On 8-bit and 16-bit systems, integers range between

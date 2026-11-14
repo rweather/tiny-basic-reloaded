@@ -331,9 +331,9 @@ Otherwise push -1 onto AESTK if a key is not currently available.
 <a name="arith"/>
 ## Arithmetic instructions
 
-### LIT n, LIT16 n
+### LIT n
 
-Pushes 8-bit or 16-bit literals onto AESTK.
+Pushes a 16-bit literal onto AESTK.
 
 ### ADD, SUB, MPY
 

@@ -766,8 +766,10 @@ void tb_exec_one(tb_state_t *state)
         break;
 
     case TB_I_LIT:
-        /* Push a literal byte onto the AESTK */
-        tb_push(state, *(state->pc)++);
+        /* Push a literal 16-bit value onto the AESTK */
+        x = *(state->pc)++;
+        x |= ((int16_t)(*(state->pc)++)) << 8;
+        tb_push(state, x);
         break;
 
     case TB_I_STORE:
@@ -1007,13 +1009,6 @@ void tb_exec_one(tb_state_t *state)
         if (tb_pop(state) == 0) {
             tb_next(state);
         }
-        break;
-
-    case TB_I_LIT16:
-        /* Push a literal 16-bit value onto the AESTK */
-        x = *(state->pc)++;
-        x |= ((int16_t)(*(state->pc)++)) << 8;
-        tb_push(state, x);
         break;
 
     case TB_I_PRC:

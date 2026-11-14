@@ -92,7 +92,7 @@ extern "C" {
 #define TB_I_CHKSTK         0x51    /**< Check the stack for deep recursion */
 #define TB_I_TSTJ           0x52    /**< Test and jump if true */
 #define TB_I_IF             0x53    /**< Pop condition and test it */
-#define TB_I_LIT16          0x54    /**< 16-bit literal */
+#define TB_I_EXIT           0x54    /**< Exit back to the operating system */
 #define TB_I_CUSTOM         0x55    /**< Dispatch custom commands */
 #define TB_I_PRC            0x56    /**< Print a single character */
 #define TB_I_TSTEND         0x57    /**< Test for the end of the statement */
@@ -108,7 +108,6 @@ extern "C" {
 #define TB_I_LOAD           0x61    /**< Load program */
 #define TB_I_SAVE           0x62    /**< Save program */
 #define TB_I_INKEY          0x63    /**< Input a keystroke without waiting */
-#define TB_I_EXIT           0x64    /**< Exit back to the operating system */
 
 #define TB_I_BAND           0x70    /**< Bitwise AND */
 #define TB_I_BOR            0x71    /**< Bitwise OR */
