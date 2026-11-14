@@ -97,6 +97,7 @@ void tb_error(tb_state_t *state, uint8_t error)
         "TF", "TOO MANY FORS",
         "IA", "INVALID ARRAY DIMENSION",
         "NA", "NOT AN ARRAY",
+        "IF", "INVALID FILENAME",
         "??", "UNKNOWN ERROR"     /* Must be last in the array */
     };
     unsigned err = ((unsigned)error) * 2;
@@ -409,12 +410,15 @@ void tb_goto(tb_state_t *state, tb_value_t line_number)
     }
 }
 
-void tb_insert(tb_state_t *state)
+int tb_insert(tb_state_t *state)
 {
+    int ok = 1;
+
     /* Insert the line into the program */
     uint16_t line_number = tb_pop(state);
     if (!tb_program_insert(state, line_number)) {
         tb_error(state, TB_E_MEMORY);
+        ok = 0;
     }
 
     /* Set up for direct mode again with an empty line */
@@ -426,6 +430,7 @@ void tb_insert(tb_state_t *state)
      * because arrays and other dynamic structures are stored just
      * beyond the end of the program. */
     tb_clear_vars(state);
+    return ok;
 }
 
 void tb_call(tb_state_t *state, const uint8_t *new_pc)

@@ -154,11 +154,14 @@ STMT:       TSTJ    GOTO 'GOTO'
 ; IF statement.
 ;
 IF:         CALL    EXPR        ; Parse and evaluate the boolean condition
-            TSTJ    IF2 'GOTO'  ; Check for 'GOTO' after the condition
+            TSTJ    IF3 'GOTO'  ; Check for 'GOTO' after the condition
 IF1:        TST     IF1 'THEN'  ; If not 'GOTO', must be 'THEN'
             IF                  ; If expression is false, go to the next line
-            JMP     XEC         ; Execute the rest of the line for 'THEN'
-IF2:        IF                  ; If expression is false, go to the next line
+            TSTN    IF2         ; Is there a line number after the 'THEN'?
+            DONE                ; If yes, then act as though 'GOTO' was present
+            XFER
+IF2:        JMP     XEC         ; Execute the rest of the line for 'THEN'
+IF3:        IF                  ; If expression is false, go to the next line
             ; Fall through to the 'GOTO' handler.
 ;
 ; GOTO statement.

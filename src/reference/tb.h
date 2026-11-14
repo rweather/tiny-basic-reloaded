@@ -23,6 +23,7 @@
 #ifndef TB_H
 #define TB_H
 
+#include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
 
@@ -166,6 +167,7 @@ extern "C" {
 #define TB_E_FOR            25      /**< Too many FORs */
 #define TB_E_INVDIM         26      /**< Invalid array dimension */
 #define TB_E_NOTARRAY       27      /**< Not an array */
+#define TB_E_INVFILENAME    28      /**< Invalid filename */
 
 /* Value types */
 #define TB_T_NUMBER         0       /**< Value is a number */
@@ -486,10 +488,12 @@ void tb_goto(tb_state_t *state, tb_value_t line_number);
  *
  * @param[in,out] state Tiny BASIC state.
  *
+ * @return Non-zero if OK, non-zero if out of memory.
+ *
  * It is assumed that the line number has already been recognised with
  * TSTL and that it is a legal line number value.
  */
-void tb_insert(tb_state_t *state);
+int tb_insert(tb_state_t *state);
 
 /**
  * @brief Execute a single IL instruction.
@@ -579,16 +583,18 @@ int tb_program_insert(tb_state_t *state, uint16_t line_number);
 /**
  * @brief List the current line in the program.
  *
+ * @param[in] stream Output stream to list to.
  * @param[in,out] state Tiny BASIC state.
  */
-void tb_program_list_line(tb_state_t *state);
+void tb_program_list_line(FILE *stream, tb_state_t *state);
 
 /**
  * @brief List the entire contents of the program.
  *
+ * @param[in] stream Output stream to list to.
  * @param[in,out] state Tiny BASIC state.
  */
-void tb_program_list(tb_state_t *state);
+void tb_program_list(FILE *stream, tb_state_t *state);
 
 /**
  * @brief Gets the number of free bytes in the program and variable space.
@@ -616,6 +622,40 @@ unsigned tb_program_get_used_program(tb_state_t *state);
  * @return The number of used bytes.
  */
 unsigned tb_program_get_used_vars(tb_state_t *state);
+
+/**
+ * @brief Loads the program from a specific filename.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] filename Name of the file to load from.
+ *
+ * @return Non-zero if the load was successful, zero on error (in errno).
+ */
+int tb_program_load_from(tb_state_t *state, const char *filename);
+
+/**
+ * @brief Load a program.  Filename is inline in the source line.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ */
+void tb_program_load(tb_state_t *state);
+
+/**
+ * @brief Saves the program to a specific filename.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] filename Name of the file to save to.
+ *
+ * @return Non-zero if the save was successful, zero on error (in errno).
+ */
+int tb_program_save_to(tb_state_t *state, const char *filename);
+
+/**
+ * @brief Saves the program.  Filename is inline in the source line.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ */
+void tb_program_save(tb_state_t *state);
 
 /**
  * @brief Clear all variables.
@@ -708,6 +748,21 @@ void tb_dim_1d(tb_state_t *state, tb_value_t ref, tb_value_t dim);
  */
 void tb_dim_2d
     (tb_state_t *state, tb_value_t ref, tb_value_t dim1, tb_value_t dim2);
+
+/**
+ * @brief Determine if the next token is a number.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] is_line_number Non-zero if looking for a line number.
+ * @param[in] allow_sign Non-zero to allow a leading '-' or '+' sign.
+ *
+ * @return Positive if a number, zero if not, negative on error.
+ *
+ * If the next token is a number, then push it onto AESTK and
+ * advance past the number.
+ */
+int tb_match_number
+    (tb_state_t *state, int is_line_number, int allow_sign);
 
 #ifdef __cplusplus
 }

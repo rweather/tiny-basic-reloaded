@@ -199,7 +199,7 @@ static int tb_match_variable(tb_state_t *state, int is_array)
  * If the next token is a number, then push it onto AESTK and
  * advance past the number.
  */
-static int tb_match_number
+int tb_match_number
     (tb_state_t *state, int is_line_number, int allow_sign)
 {
     unsigned offset = 0;
@@ -826,7 +826,7 @@ void tb_exec_one(tb_state_t *state)
 
     case TB_I_LST:
         /* List the BASIC program */
-        tb_program_list(state);
+        tb_program_list(stdout, state);
         break;
 
     case TB_I_IND:
@@ -1088,11 +1088,13 @@ void tb_exec_one(tb_state_t *state)
         break;
 
     case TB_I_LOAD:
-        /* Load program, not implemented yet */
+        /* Load program */
+        tb_program_load(state);
         break;
 
     case TB_I_SAVE:
-        /* Save program, not implemented yet */
+        /* Save program */
+        tb_program_save(state);
         break;
 
     case TB_I_INKEY:

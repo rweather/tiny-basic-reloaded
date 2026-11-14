@@ -182,15 +182,15 @@ int tb_program_insert(tb_state_t *state, uint16_t line_number)
     }
 }
 
-void tb_program_list_line(tb_state_t *state)
+void tb_program_list_line(FILE *stream, tb_state_t *state)
 {
     if (state->search_line != 0) {
-        printf("%u %s\n", (unsigned)(state->search_line),
-               (const char *)(state->search_cursor + 3));
+        fprintf(stream, "%u %s\n", (unsigned)(state->search_line),
+                (const char *)(state->search_cursor + 3));
     }
 }
 
-void tb_program_list(tb_state_t *state)
+void tb_program_list(FILE *stream, tb_state_t *state)
 {
     uint16_t first = state->list1;
     uint16_t last = state->list2;
@@ -208,7 +208,7 @@ void tb_program_list(tb_state_t *state)
             if (last != 0 && state->search_line > last) {
                 break;
             }
-            tb_program_list_line(state);
+            tb_program_list_line(stream, state);
         } while (!(state->do_break) && tb_program_next(state));
     }
 }
@@ -226,4 +226,143 @@ unsigned tb_program_get_used_program(tb_state_t *state)
 unsigned tb_program_get_used_vars(tb_state_t *state)
 {
     return state->next_alloc - state->program_size;
+}
+
+static int tb_ends_in_bas(const char *filename, size_t len, size_t size)
+{
+    if (len < 5) {
+        return 0;
+    }
+    if (!memcmp(filename + len - 4, ".bas", 4) ||
+            !memcmp(filename + len - 4, ".BAS", 4)) {
+        return 1;
+    }
+    if ((len + 5) >= size) {
+        /* Buffer is not big enough to add ".bas" */
+        return 1;
+    }
+    return 0;
+}
+
+static int tb_get_filename(tb_state_t *state, char *filename, size_t size)
+{
+    size_t posn = 0;
+    uint8_t ch;
+    while ((ch = *(state->cursor)) != 0) {
+        ++(state->cursor);
+        if (ch == '"') {
+            if (!posn) {
+                return 0;
+            }
+            if (!tb_ends_in_bas(filename, posn, size)) {
+                memcpy(filename + posn, ".bas", 4);
+                posn += 4;
+            }
+            filename[posn] = '\0';
+            return 1;
+        }
+        if ((posn + 1) >= size) {
+            return 0;
+        }
+        filename[posn++] = (char)ch;
+    }
+    return 0;
+}
+
+int tb_program_load_from(tb_state_t *state, const char *filename)
+{
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        return 0;
+    }
+    tb_new(state);
+    while (fgets((char *)(state->line), sizeof(state->line), file)) {
+        /* Strip CR and LF from the end of the line */
+        size_t len = strlen((const char *)(state->line));
+        while (len > 0 && (state->line[len - 1] == '\r' ||
+                           state->line[len - 1] == '\n')) {
+            --len;
+        }
+
+        /* Set up to parse the line */
+        state->line[len] = '\0';
+        state->cursor = state->line;
+        state->line_number = 0;
+
+        /* Skip leading whitespace */
+        tb_skip_whitespace(state);
+        if (*(state->cursor) == 0) {
+            /* Ignore empty lines */
+            continue;
+        }
+
+        /* Parse the line number and push it onto AESTK */
+        if (!tb_match_number(state, 1, 0)) {
+            tb_error(state, TB_E_SYNTAX);
+            fclose(file);
+            return 1;
+        }
+
+        /* Insert the line into the program */
+        if (!tb_insert(state)) {
+            /* Ran out of memory trying to load the program */
+            fclose(file);
+            return 1;
+        }
+    }
+    fclose(file);
+    tb_end(state);
+    return 1;
+}
+
+void tb_program_load(tb_state_t *state)
+{
+    char filename[TB_MAX_LINE];
+    tb_skip_whitespace(state);
+    if (state->cursor[0] == '"') {
+        ++(state->cursor);
+        if (!tb_get_filename(state, filename, sizeof(filename))) {
+            tb_error(state, TB_E_INVFILENAME);
+        } else {
+            if (!tb_program_load_from(state, filename)) {
+                perror(filename);
+            }
+        }
+    } else if (state->cursor[0] != 0) {
+        tb_error(state, TB_E_SYNTAX);
+    } else {
+        tb_error(state, TB_E_MISSING);
+    }
+}
+
+int tb_program_save_to(tb_state_t *state, const char *filename)
+{
+    FILE *file = fopen(filename, "w");
+    if (!file) {
+        return 0;
+    }
+    tb_program_list(file, state);
+    fclose(file);
+    return 1;
+}
+
+void tb_program_save(tb_state_t *state)
+{
+    char filename[TB_MAX_LINE];
+    tb_skip_whitespace(state);
+    if (state->cursor[0] == '"') {
+        ++(state->cursor);
+        if (!tb_get_filename(state, filename, sizeof(filename))) {
+            tb_error(state, TB_E_INVFILENAME);
+        } else {
+            if (!tb_program_save_to(state, filename)) {
+                perror(filename);
+            }
+        }
+        tb_end(state);
+    } else if (state->cursor[0] != 0) {
+        tb_error(state, TB_E_SYNTAX);
+    } else {
+        tb_error(state, TB_E_MISSING);
+    }
 }
