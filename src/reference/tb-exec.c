@@ -239,9 +239,10 @@ int tb_match_number
             break;
         }
         value = value * 10 + (ch - '0');
-        if (value > 32768U) {
-            /* Value is too big to be a 16-bit integer.  We allow +32768
-             * only so that it can be negated into -32768. */
+        if (value > 65535U) {
+            /* Value is too big to be a 16-bit integer.  While integers
+             * are signed, we allow up to 65535 for ease of entering
+             * memory addresses for PEEK and POKE. */
             if (is_line_number) {
                 tb_error(state, TB_E_INVLINE);
             } else {
@@ -261,9 +262,6 @@ int tb_match_number
     if (allow_sign) {
         if (is_neg) {
             tb_push(state, -((tb_value_t)value));
-        } else if (value == 32768U) {
-            tb_error(state, TB_E_OVERFLOW);
-            return -1;
         } else {
             tb_push(state, (tb_value_t)value);
         }
@@ -470,12 +468,19 @@ static tb_value_t tb_apply1(tb_state_t *state, uint8_t opcode, tb_value_t x)
     case TB_I_LNOT:     return !x;
 
     case TB_I_RND:
-        if (x <= 0) {
-            /* Random number between 0 (inclusive) and 1 (exclusive) */
-            return 0;
-        } else {
+        if (x > 0) {
             /* Random number between 0 and x-1 */
-            return rand() * ((int64_t)x) / RAND_MAX;
+            tb_value_t y = rand() * ((int64_t)x) / RAND_MAX;
+            if (y >= x) {
+                /* Correct for the case where the output of rand()
+                 * was exactly the number RAND_MAX. */
+                --y;
+            }
+            return y;
+        } else {
+            /* Zero and negative values are not allowed */
+            tb_error(state, TB_E_ILLFUNC);
+            return 0;
         }
 
     case TB_I_PEEK:
@@ -593,7 +598,7 @@ void tb_exec_one(tb_state_t *state)
     if (state->do_break) {
         state->do_break = 0;
         if (state->line_number) {
-            printf("\nBREAK AT LINE %d\n", (int)(state->line_number));
+            printf("\nBREAK IN LINE %d\n", (int)(state->line_number));
         } else {
             printf("\nBREAK\n");
         }

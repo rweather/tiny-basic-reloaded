@@ -14,6 +14,23 @@ Some of the instructions below jump to "XEC".  That indicates that
 control continues with the next BASIC statement after the instruction
 rather than continuing.
 
+* [Initialization instructions](#init)
+* [Test instructions](#test)
+* [Control flow instructions](#ctrl-flow)
+* [Printing instructions](#print)
+* [Input instructions](#input)
+* [Arithmetic instructions](#arith)
+* [Logical instructions](#logic)
+* [Bitwise instructions](#bitwise)
+* [Comparison instructions](#compare)
+* [Variable handling instructions](#var)
+* [Array handling instructions](#array)
+* [Apply instructions](#apply)
+* [Random number generation instructions](#random)
+* [Program management instructions](#program)
+* [Other instructions](#other)
+
+<a name="init"/>
 ## Initialization instructions
 
 ### INIT
@@ -28,10 +45,14 @@ The "NEW" statement in BASIC uses this opcode.
 Initializes to execute the next BASIC command.  CTLSTK and AESTK are emptied.
 The program and variable storage areas are not affected.
 
+The XINIT instruction is a good place to put BREAK / CTRL-C detection
+because every command will return to "XEC" at some point.
+
 ### CLEAR
 
 Clears all variables from memory.
 
+<a name="test"/>
 ## Test instructions
 
 The main core of the BASIC parser and interpreter is "TST" and its
@@ -113,6 +134,7 @@ handler for "opcode" onto AESTK and jump to "label".
 "TSTOP" is usually combined with "APPLY" or "APPLYFN" to apply the
 effect of the opcode once its parameters have been parsed.
 
+<a name="ctrl-flow"/>
 ## Control flow instructions
 
 ### CALL label
@@ -256,6 +278,7 @@ This opcode is for versions of BASIC that are running inside a larger
 system.  If BASIC is the operating system and there is no way to
 exit it, then the handler for this opcode should report a syntax error.
 
+<a name="print"/>
 ## Printing instructions
 
 ### PRS
@@ -293,6 +316,7 @@ PRINT statements.  Tiny BASIC Reloaded does not print a space for ";".
 
 Pops a value from AESTK and prints that many spaces.
 
+<a name="input"/>
 ## Input instructions
 
 ### INNUM
@@ -304,6 +328,7 @@ Inputs a number and pushes the value onto AESTK.
 If a key is available, push its ASCII character code onto AESTK.
 Otherwise push -1 onto AESTK if a key is not currently available.
 
+<a name="arith"/>
 ## Arithmetic instructions
 
 ### LIT n, LIT16 n
@@ -321,6 +346,7 @@ Pops the top two values from AESTK, divides them, and pushes their
 quotient or remainder.  Raises a "DIVISION BY ZERO" error if the
 second value is zero.
 
+<a name="logic"/>
 ## Logical instructions
 
 ### LAND
@@ -338,6 +364,7 @@ push 1 onto AESTK.  Otherwise push 0 onto AESTK.
 Pops the top value from AESTK.  If the value is non-zero, then
 push 0 onto AESTK.  Otherwise push 1 onto AESTK.
 
+<a name="bitwise"/>
 ## Bitwise instructions
 
 ### BAND
@@ -380,6 +407,7 @@ right by the number of bits given in the second.
 
 This performs a logical shift which shifts in zero bits at the top.
 
+<a name="compare"/>
 ## Comparison instructions
 
 ### CMPEQ, CMPNE, CMPLT, CMPGT, CMPLE, CMPGE
@@ -413,6 +441,7 @@ Tiny BASIC Reloaded uses CMPEQ, CMPNE, CMPLT, CMPGT, CMPLE, CMPGE, and IF.
 This allows multiple relational expressions to be combined with logical AND,
 OR, and NOT.
 
+<a name="var"/>
 ## Variable handling instructions
 
 ### STORE
@@ -431,6 +460,7 @@ Same as STORE but do not pop the variable pointer from AESTK.
 Pops a variable pointer from the AESTK.  Pushes the value at that
 pointer onto AESTK.
 
+<a name="array"/>
 ## Array handling instructions
 
 ### ARRAY1
@@ -482,6 +512,7 @@ array and initialize the array header for a 2-dimensional array.
 
 See DIM1 above for the error cases.
 
+<a name="apply"/>
 ## Apply instructions
 
 ### APPLY
@@ -496,7 +527,8 @@ Pops two values from AESTK and applies the opcode whose pointer is
 lower down on the stack.  Pushes the result onto AESTK.  The pointer
 comes from a previous "TSTOP" instruction.
 
-## Random number generation
+<a name="random"/>
+## Random number generation instructions
 
 ### RANDOM
 
@@ -505,10 +537,11 @@ intended for Tiny BASIC Extended.  Use RND instead in newer code.
 
 ### RND
 
-Pops the top value n from AESTK.  If n is less than or equal to zero,
-then push zero onto AESTK.  Otherwise, generate a random integer
+Pops the top value n from AESTK.  If n is zero or negative, then report
+the "ILLEGAL FUNCTION CALL" error.  Otherwise, generate a random integer
 between 0 and n-1 and push it onto AESTK.
 
+<a name="program"/>
 ## Program management instructions
 
 ### INSRT
@@ -539,6 +572,7 @@ last line numbers are on AESTK.
 List the portion of the BASIC program that was specified by a previous
 LIST0, LIST1, or LIST2 instruction.
 
+<a name="other"/>
 ## Other instructions
 
 ### ASC

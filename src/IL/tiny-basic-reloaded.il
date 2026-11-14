@@ -23,6 +23,7 @@
 ;     | "CLR"
 ;     | "DIM" array-var-list
 ;     | "END"
+;     | "EXIT" [expression]
 ;     | "FOR" var "=" expression "TO" expression ["STEP" expression]
 ;     | "GOSUB" expression
 ;     | "GOTO" expression
@@ -31,7 +32,7 @@
 ;     | "IF" expression "GOTO" expression
 ;     | "INPUT" [string ';'] array-var-list
 ;     | "LIST" [list-range]
-;     | "LOAD"
+;     | "LOAD" [string]
 ;     | "NEXT" [var]
 ;     | "POKE" expression "," expression
 ;     | "POP"
@@ -40,7 +41,7 @@
 ;     | "REM" (any character except <CR>)* <CR>
 ;     | "RETURN"
 ;     | "RUN" [number]
-;     | "SAVE"
+;     | "SAVE" [string]
 ;     | "SIZE"
 ;
 ; print-list ::= print-expression (("," | ";") print-expression)*
@@ -290,24 +291,25 @@ DIM4:       TST     DIM4 ')'    ; Closing bracket after the single dimension
 ;
 ; LIST statement.
 ;
-LIST:       TSTCR LIST1         ; Is it just 'LIST' on its own?
+LIST:       TSTCR   LIST1       ; Is it just 'LIST' on its own?
             LIST0               ; List the entire program
-            JMP LIST6
-LIST1:      TST LIST3 "-"       ; Is it "LIST -n"?
+            JMP     LIST7
+LIST1:      TST     LIST3 '-'   ; Is it "LIST -n"?
             LIT 1               ; List from line 1 to "n"
-LIST2:      TSTN LIST2
+LIST2:      TSTN    LIST2
             LIST2
-            JMP LIST6
-LIST3:      TSTN LIST3          ; Is it "LIST n" or "LIST n-" or "LIST n-m"?
-            TST LIST5 "-"
-            TSTN LIST4          ; Is it "LIST n-?" or "LIST n-m"?
+            JMP     LIST7
+LIST3:      TSTN    LIST3       ; Is it "LIST n" or "LIST n-" or "LIST n-m"?
+            TSTJ    LIST4 ','   ; Is it "LIST n," or "LIST n,m"?
+            TST     LIST6 '-'
+LIST4:      TSTN    LIST5       ; Is it "LIST n-?" or "LIST n-m"?
             LIST2
-            JMP LIST6
-LIST4:      LIT16 31999         ; List from "n" to the maximum line
+            JMP     LIST7
+LIST5:      LIT16   31999       ; List from "n" to the maximum line
             LIST2
-            JMP LIST6
-LIST5:      LIST1               ; Just "LIST n"
-LIST6:      LST
+            JMP     LIST7
+LIST6:      LIST1               ; Just "LIST n"
+LIST7:      LST
             END
 ;
 ; RUN statement.
@@ -413,7 +415,6 @@ REXPR:      CALL    ASEXPR      ; Get first subexpression
             TSTOP   REXPR1 CMPLE '<='
             TSTOP   REXPR1 CMPNE '<>'
             TSTOP   REXPR1 CMPGE '>='
-            TSTOP   REXPR1 CMPNE '><'
             TSTOP   REXPR1 CMPLT '<'
             TSTOP   REXPR1 CMPGT '>'
             RTN                 ; Relational expression is done
@@ -427,7 +428,7 @@ ASEXPR:     CALL    MEXPR       ; Get the first subexpression
 ASEXPR1:    TSTOP   ASEXPR2 ADD '+' ; Figure out which operator we have
             TSTOP   ASEXPR2 SUB '-'
             TSTOP   ASEXPR2 BOR 'BOR'
-            TSTOP   ASEXPR2 BXOR 'BXOR'
+            TSTOP   ASEXPR2 BXOR 'XOR'
             RTN                 ; Additive or subtractive expression is done
 ASEXPR2:    CALL    MEXPR       ; Get the second subexpression
             APPLY               ; Apply the binary operator

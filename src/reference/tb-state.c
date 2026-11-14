@@ -106,7 +106,7 @@ void tb_error(tb_state_t *state, uint8_t error)
     }
     printf("\n%s", errors[err + 1]);
     if (state->line_number) {
-        printf(" AT LINE %d\n", (int)(state->line_number));
+        printf(" IN LINE %d\n", (int)(state->line_number));
     } else {
         printf("\n");
     }
