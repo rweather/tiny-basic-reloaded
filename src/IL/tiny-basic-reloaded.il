@@ -27,6 +27,7 @@
 ;     | "GOSUB" expression
 ;     | "GOTO" expression
 ;     | "IF" expression "THEN" statement-list
+;     | "IF" expression "THEN" number
 ;     | "IF" expression "GOTO" expression
 ;     | "INPUT" [string ';'] array-var-list
 ;     | "LIST" [list-range]

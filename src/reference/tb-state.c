@@ -337,16 +337,19 @@ void tb_next_for(tb_state_t *state, tb_value_t var)
 {
     tb_substk_item_t *item = tb_find_for(state, var);
     if (item) {
+        /* Increment the loop variable by the step */
         tb_value_t value = tb_index(state, item->var);
-        if ((item->step >= 0 && value >= item->stop) ||
-                (item->step < 0 && value <= item->stop)) {
+        value += item->step;
+        tb_store(state, item->var, value);
+
+        /* Have we exceeded the maximum value for the loop? */
+        if ((item->step >= 0 && value > item->stop) ||
+                (item->step < 0 && value < item->stop)) {
             /* Last iteration of the "FOR" loop */
             tb_pop_for(state);
             tb_next(state);
         } else {
             /* Update the variable and do another iteration */
-            value += item->step;
-            tb_store(state, item->var, value);
             state->cursor = item->cursor;
             state->line_number = item->line_number;
             state->colon_mode = 0;

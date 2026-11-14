@@ -230,10 +230,10 @@ Any other "FOR" contexts in the way are discarded.
 If a "RETURN" context is encounted on SUBSTK, then report a
 "NEXT WITHOUT FOR" error and stop.
 
-Once the matching "FOR" context is found, then check if the loop
-variable's value has reached the end of the loop.  If it has,
-then continue with the next instruction.  If not, add the step
-value and jump to the top of the "FOR" loop.
+Once the matching "FOR" context is found, then add the step value to the
+loop variable.  If the loop variable's value has exceeded the stop value,
+then continue with the next instruction.  Otherwise, jump to the top
+of the "FOR" loop.
 
 This opcode does not work in direct mode.
 
