@@ -88,6 +88,8 @@ syn match   ilOpcode            "\<CLEAR\>"
 syn match   ilOpcode            "\<LOAD\>"
 syn match   ilOpcode            "\<SAVE\>"
 syn match   ilOpcode            "\<INKEY\>"
+syn match   ilOpcode            "\<TSTB\>"
+syn match   ilOpcode            "\<FPMUL\>"
 
 syn match   ilOpcode            "\<BAND\>"
 syn match   ilOpcode            "\<BOR\>"

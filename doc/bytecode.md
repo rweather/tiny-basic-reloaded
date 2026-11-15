@@ -346,6 +346,14 @@ Pops the top two values from AESTK, divides them, and pushes their
 quotient or remainder.  Raises a "DIVISION BY ZERO" error if the
 second value is zero.
 
+## FPMUL
+
+Pops the top three values from AESTK and performs a fixed-point
+multiplication.  The values from bottom to top are x, y, and bits.
+The effect is to compute (x &#42; y) &gt;&gt; bits in double
+precision.  If the result is outside the range of a signed integer,
+report "OVERFLOW ERROR".
+
 <a name="logic"/>
 ## Logical instructions
 

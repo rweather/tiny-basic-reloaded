@@ -191,7 +191,7 @@ static int tb_match_variable(tb_state_t *state, int is_array)
  * @brief Determine if the next token is a number.
  *
  * @param[in,out] state Tiny BASIC state.
- * @param[in] is_line_number Non-zero if looking for a line number.
+ * @param[in] opcode Opcode the number is being parsed for; e.g. TB_I_TSTL.
  * @param[in] allow_sign Non-zero to allow a leading '-' or '+' sign.
  *
  * @return Positive if a number, zero if not, negative on error.
@@ -200,7 +200,7 @@ static int tb_match_variable(tb_state_t *state, int is_array)
  * advance past the number.
  */
 int tb_match_number
-    (tb_state_t *state, int is_line_number, int allow_sign)
+    (tb_state_t *state, int opcode, int allow_sign)
 {
     unsigned offset = 0;
     uint8_t ch = state->cursor[offset];
@@ -243,8 +243,10 @@ int tb_match_number
             /* Value is too big to be a 16-bit integer.  While integers
              * are signed, we allow up to 65535 for ease of entering
              * memory addresses for PEEK and POKE. */
-            if (is_line_number) {
+            if (opcode == TB_I_TSTL) {
                 tb_error(state, TB_E_INVLINE);
+            } else if (opcode == TB_I_TSTB) {
+                tb_error(state, TB_E_ILLFUNC);
             } else {
                 tb_error(state, TB_E_OVERFLOW);
             }
@@ -252,10 +254,16 @@ int tb_match_number
         }
         ++offset;
     }
-    if (is_line_number) {
+    if (opcode == TB_I_TSTL) {
         /* Check if the number is valid as a line number */
         if (is_neg || value < 1 || value > TB_MAX_LINE_NUMBER) {
             tb_error(state, TB_E_INVLINE);
+            return -1;
+        }
+    } else if (opcode == TB_I_TSTB) {
+        /* Check if the number is valid as a bit number */
+        if (is_neg || value < 1 || value > (int)(sizeof(tb_value_t) * 8 - 2)) {
+            tb_error(state, TB_E_ILLFUNC);
             return -1;
         }
     }
@@ -412,7 +420,7 @@ static void tb_input(tb_state_t *state, int type)
         /* Parse the next number */
         save_cursor = state->cursor;
         state->cursor = state->input_cursor;
-        match = tb_match_number(state, 0, 1);
+        match = tb_match_number(state, TB_I_TSTN, 1);
         state->cursor = save_cursor;
         if (match < 0) {
             /* Overflow error; discard the rest of the line */
@@ -606,6 +614,21 @@ static uint8_t tb_asc(tb_state_t *state)
     }
     ++(state->cursor);
     return ch;
+}
+
+static tb_value_t tb_fpmul
+    (tb_state_t *state, tb_value_t x, tb_value_t y, tb_value_t bit_count)
+{
+    int32_t result = (((int32_t)x) * y) >> bit_count;
+    if (result > 32767) {
+        tb_error(state, TB_E_OVERFLOW);
+        return 32767;
+    } else if (result < -32768) {
+        tb_error(state, TB_E_OVERFLOW);
+        return -32768;
+    } else {
+        return (tb_value_t)result;
+    }
 }
 
 void tb_exec_one(tb_state_t *state)
@@ -815,10 +838,11 @@ void tb_exec_one(tb_state_t *state)
 
     case TB_I_TSTN:
     case TB_I_TSTL:
+    case TB_I_TSTB:
         /* Test the next token to see if it is a number */
         tb_skip_whitespace(state);
         offset = (int8_t)(*(state->pc)++);
-        if (!tb_match_number(state, insn == TB_I_TSTL, 0)) {
+        if (!tb_match_number(state, insn, 0)) {
             if (offset == 0) {
                 /* When TSTN jumps back to itself, that means a syntax error */
                 tb_error(state, TB_E_SYNTAX);
@@ -1126,6 +1150,13 @@ void tb_exec_one(tb_state_t *state)
         /* Exit back to the operating system with the status on AESTK */
         state->exit_seen = 1;
         state->exit_code = (tb_pop(state) & 0xFF);
+        break;
+
+    case TB_I_FPMUL:
+        /* Perform a fixed-point multiplication */
+        y = tb_pop(state);
+        x = tb_pop(state);
+        tb_push(state, tb_fpmul(state, tb_pop(state), x, y));
         break;
 
     default:

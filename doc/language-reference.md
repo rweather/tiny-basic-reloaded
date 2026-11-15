@@ -58,6 +58,7 @@ shows the operator precedence from highest to lowest:
 * [END](#end) - Ends program execution and return to direct command mode.
 * [EXIT](#exit) - Exits BASIC back to the surrounding operating system.
 * [FOR...NEXT](#fornext) - Loops around a given number of times.
+* [FPMUL](#fpmul) - Performs fixed-point multiplication.
 * [GOSUB...RETURN](#gosub) - Calls and returns from subroutines.
 * [GOTO](#goto) - Redirects program flow to another line in the program.
 * [IF...THEN](#ifthen) - Redirecting program flow based on a condition.
@@ -311,6 +312,53 @@ variable name.
 **Errors**:
 > `NEXT WITHOUT FOR` - Could not find a **FOR** statement with a matching variable.<br/>
 `TOO MANY FORS` - The stack of open **FOR** loops ran out of space.  This may happen if **FOR** is executed repeatedly without a matching **NEXT**.
+
+---
+
+<a name="fpmul"/>
+### FPMUL
+
+**Purpose:** Performs fixed-point multiplication.
+
+**Format:**
+> LET _result_ = **FPMUL**(_x_, _y_, _bits_)
+
+**Description:**
+> **FPMUL** performs fixed-point multiplication.  The expressions
+_x_ and _y_ are evaluated and multiplied to produce a double-precision
+integer intermediate result.  The intermediate result is then
+shifted right by _bits_ bit positions.
+
+> The _bits_ parameter must be a literal number between 1 and 14.
+It cannot be a variable or a complex expression.
+
+> Fixed-point multiplication is provided to make up for the lack of
+floating-point.  It can help with certain algorithms where only a
+certain number of bits of precision are required and a normal
+16-bit multiplication would overflow the intermediate result.
+
+> Fixed-point addition and subtraction are the same as regular integer
+addition and subtraction.  Fixed-point division is not currently
+supported.
+
+**Examples:**
+
+> In the example below, the fixed-point number 240 is equivalent to
+240 / 2<sup>5</sup> = 7.5 and -1234 is equivalent to -38.5625.
+The result -9255 is equivalent to -289.21875 = 7.5 &#42; -38.5625.
+
+> 240 &#42; -1234 = -296160 is outside the range of a 16-bit signed integer,
+but 240 &#42; -1234 / 2<sup>5</sup> = -9255 is in range.  The correct result
+cannot be computed with regular 16-bit multiplication and division.
+
+    PRINT 230 * -1234 / 32
+    -677
+    PRINT FPMUL(240, -1234, 5)
+    -9255
+
+**Errors**:
+> `OVERFLOW ERROR` - The final result does not fit in a 16-bit integer.<br/>
+`ILLEGAL FUNCTION CALL` - The number of _bits_ is outside the range 1 to 14.
 
 ---
 

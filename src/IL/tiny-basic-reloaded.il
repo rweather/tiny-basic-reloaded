@@ -68,6 +68,7 @@
 ;     | RND "(" expression ")"
 ;     | PEEK "(" expression ")"
 ;     | INKEY
+;     | FPMUL "(" expression "," expression "," bit-number ")"
 ; relop ::= "<" | "<=" | "<>" | ">" | ">=" | "><" | "="
 ; mulop ::= "*" | "/" | "MOD" | "SHL" | "SHR" | "LSR" | "BAND"
 ;
@@ -85,6 +86,7 @@
 ; number ::= digit digit*
 ; digit ::= "0" | "1" | "2" | ... | "8" | "9"
 ; string ::= '"' (any character except " or <CR>)* '"'
+; bit-number ::= "1" | "2" | ... | "13" | "14"
 ;
 ;-----------------------------------------------------------------------------
 ;
@@ -481,8 +483,9 @@ ASC1:       TST     ASC1 ')'    ; Closing bracket
             RTN                 ; Return to the caller
 INKEY:      INKEY               ; Input a keystroke without waiting
             RTN                 ; Return to the caller
-SEXPR4:     TSTJ    ASC 'ASC'   ; Check for 'ASC' which needs special handling
-            TSTJ    INKEY 'INKEY' ; 'INKEY' also needs special handling
+SEXPR4:     TSTJ    ASC 'ASC'   ; Check for keywords that need special handling
+            TSTJ    INKEY 'INKEY'
+            TSTJ    FPMUL 'FPMUL'
             TSTOP   SEXPR3 RANDOM 'RND' ; Check for other built-in functions
             TSTOP   SEXPR3 PEEK 'PEEK'
             CUSTFN  SEXPR3      ; Check for custom functions that extend BASIC
@@ -494,3 +497,15 @@ BEXPR:      TST     BEXPR '('   ; Must start with '('
             CALL    EXPR        ; Parse the expression inside the brackets
 BEXPR1:     TST     BEXPR1 ')'  ; Must end with ')'
             RTN
+;
+; Fixed-point multiplication.
+;
+FPMUL:      TST     FPMUL '('   ; Must have '(' after the FPMUL keyword
+            CALL    EXPR        ; Get the first argument
+FPMUL1:     TST     FPMUL1 ','  ; Comma is next
+            CALL    EXPR        ; Get the second argument
+FPMUL2:     TST     FPMUL2 ','  ; Comma is next
+FPMUL3:     TSTB    FPMUL3      ; Get the bit count for fixed-point adjustments
+FPMUL4:     TST     FPMUL4 ')'  ; Must end with a ')'
+            FPMUL               ; Perform fixed-point multiplication
+            RTN                 ; Return to the caller
