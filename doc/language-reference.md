@@ -83,6 +83,46 @@ shows the operator precedence from highest to lowest:
 * [RND](#rnd) - Generates a random number.
 * [SPC](#spc) - Prints a specified number of spaces.
 
+## Error codes
+
+Errors are usually reported with a line number; for example,
+"SYNTAX ERROR IN LINE 20".  If memory is at a premium on a target,
+then the short two-letter name will be used instead; "SN ERROR IN LINE 20".
+Most of these come from TRS-80 Level II BASIC, and not all of them are
+in use by Tiny BASIC Reloaded at the moment.
+
+<table border="1">
+<tr><td><b>Code</b></td><td><b>Short Name</b></td><td><b>Long Name</b></td></tr>
+<tr><td>1</td><td><tt>NF</tt></td><td><tt>NEXT WITHOUT FOR</tt></td></tr>
+<tr><td>2</td><td><tt>SN</tt></td><td><tt>SYNTAX ERROR</tt></td></tr>
+<tr><td>3</td><td><tt>RG</tt></td><td><tt>RETURN WITHOUT GOSUB</tt></td></tr>
+<tr><td>4</td><td><tt>OD</tt></td><td><tt>OUT OF DATA</tt></td></tr>
+<tr><td>5</td><td><tt>FC</tt></td><td><tt>ILLEGAL FUNCTION CALL</tt></td></tr>
+<tr><td>6</td><td><tt>OV</tt></td><td><tt>OVERFLOW ERROR</tt></td></tr>
+<tr><td>7</td><td><tt>OM</tt></td><td><tt>OUT OF MEMORY</tt></td></tr>
+<tr><td>8</td><td><tt>UL</tt></td><td><tt>INVALID LINE NUMBER</tt></td></tr>
+<tr><td>9</td><td><tt>BS</tt></td><td><tt>SUBSCRIPT OUT OF RANGE</tt></td></tr>
+<tr><td>10</td><td><tt>DD</tt></td><td><tt>REDIMENSIONED ARRAY</tt></td></tr>
+<tr><td>11</td><td><tt>/0</tt></td><td><tt>DIVISION BY ZERO</tt></td></tr>
+<tr><td>12</td><td><tt>ID</tt></td><td><tt>ILLEGAL DIRECT</tt></td></tr>
+<tr><td>13</td><td><tt>TM</tt></td><td><tt>TYPE MISMATCH</tt></td></tr>
+<tr><td>14</td><td><tt>OS</tt></td><td><tt>OUT OF STRING SPACE</tt></td></tr>
+<tr><td>15</td><td><tt>LS</tt></td><td><tt>STRING TOO LONG</tt></td></tr>
+<tr><td>16</td><td><tt>ST</tt></td><td><tt>FORMULA TOO COMPLEX</tt></td></tr>
+<tr><td>17</td><td><tt>CN</tt></td><td><tt>CANNOT CONTINUE</tt></td></tr>
+<tr><td>18</td><td><tt>NR</tt></td><td><tt>NO RESUME</tt></td></tr>
+<tr><td>19</td><td><tt>RW</tt></td><td><tt>RESUME WITHOUT ERROR</tt></td></tr>
+<tr><td>20</td><td><tt>UE</tt></td><td><tt>UNPRINTABLE ERROR</tt></td></tr>
+<tr><td>21</td><td><tt>MO</tt></td><td><tt>MISSING OPERAND</tt></td></tr>
+<tr><td>22</td><td><tt>FD</tt></td><td><tt>BAD FILE DATA</tt></td></tr>
+<tr><td>23</td><td><tt>L3</tt></td><td><tt>DISK BASIC ERROR</tt></td></tr>
+<tr><td>24</td><td><tt>TG</tt></td><td><tt>TOO MANY GOSUBS</tt></td></tr>
+<tr><td>25</td><td><tt>TF</tt></td><td><tt>TOO MANY FORS</tt></td></tr>
+<tr><td>26</td><td><tt>IA</tt></td><td><tt>INVALID ARRAY DIMENSION</tt></td></tr>
+<tr><td>27</td><td><tt>NA</tt></td><td><tt>NOT AN ARRAY</tt></td></tr>
+<tr><td>28</td><td><tt>IF</tt></td><td><tt>INVALID FILENAME</tt></td></tr>
+</table>
+
 ---
 
 <a name="asc"/>

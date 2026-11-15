@@ -64,21 +64,39 @@ This approach reduces the implementation burden of BASIC on new targets.
 To port to a target, the user need only supply I/O, memory management,
 opcode helper functions, and the automated translator.
 
-This implementation goes beyond "Tiny" with features from more
-featureful versions of BASIC.  See the
-[Language Reference Manual](doc/language-reference.md) for
-more information on the available BASIC commands.
-
-Tiny BASIC Reloaded is integer only with 26 plain variables A to Z and
-26 arrays also named A to Z.  Arrays may have 1 or 2 dimensions.
-If you need more than 26 plain variables, you can dimension an array
-and refer to variables A(1), A(2), and so on.
-
 An implementation in C of the bytecode interpreter is provided under
 [src/reference](src/reference) to test changes to the language, and to
 provide a reference for the expected behaviour on real targets.
 The [IL Bytecode Reference](doc/bytecode.md) also describes the
 expected behaviour of each bytecode.
+
+## Features
+
+Tiny BASIC Reloaded borrows a number of features from other BASIC's to
+provide a reasonable set of capabilities in an integer-only BASIC.
+This implementation goes well beyond "Tiny" with features from more
+featureful versions of BASIC.
+
+Inspiration was taken from Tiny BASIC, Tiny BASIC Extended,
+AppleSoft BASIC, Apple II Integer BASIC, and TRS-80 Level II BASIC.
+The syntax mostly follows AppleSoft except where AppleSoft was
+missing something like INKEY.
+
+* 26 16-bit integer variables A to Z.
+* 26 arrays of 16-bit integers which can be dimensioned with 1 or 2 dimensions.
+* Commands: CALL, CLR, DIM, END, FOR...NEXT, GOSUB...RETURN, GOTO,
+IF...THEN, IF...GOTO, INPUT, LET, LIST, LOAD, PEEK, POKE, POP, PRINT,
+REM, RND, RUN, SAVE, SIZE, SPC.
+* Operators: +, -, &#42;, /, MOD, AND, OR, NOT, BAND, BOR, BNOT, XOR,
+SHL, SHR, LSL, =, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=.
+* Some limited string support with ASC and CHR$.
+* Some limited fixed-point support with +, -, and FPMUL in place of
+true floating-point.
+* Non-blocking character input with INKEY to assist with writing
+interactive programs like video games.
+
+See the [Language Reference Manual](doc/language-reference.md) for
+more information.
 
 ## Documentation
 
