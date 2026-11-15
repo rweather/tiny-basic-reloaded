@@ -325,8 +325,12 @@ Inputs a number and pushes the value onto AESTK.
 
 ### INKEY
 
+Pops a value from AESTK, which is the number of milliseconds to
+wait for a key to become available.  Zero says to return immediately
+if there is no key available.  Negative means to wait indefinitely.
+
 If a key is available, push its ASCII character code onto AESTK.
-Otherwise push -1 onto AESTK if a key is not currently available.
+Otherwise push -1 onto AESTK if a key is not available within the timeout.
 
 <a name="arith"/>
 ## Arithmetic instructions

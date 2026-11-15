@@ -480,7 +480,8 @@ _expression_ does not exist in the program.<br/>
 **Purpose:** Gets input a key at a time without waiting.
 
 **Format:**
-> **INKEY**
+> **INKEY**<br/>
+**INKEY**(_timeout_)
 
 **Description:**
 > **INKEY** first checks if a key is available in the input buffer.
@@ -488,16 +489,23 @@ If a key is available, **INKEY** returns the ASCII code of that key.
 If a key is not available, **INKEY** returns -1.  The key is not
 echo'ed to the screen.
 
+> The optional _timeout_ specifies how many milliseconds to wait
+for the key before returning -1.  If _timeout_ is zero, then
+return immediately if there is no key available.  If _timeout_ is
+negative, then wait indefinitely (BREAK will abort).  If _timeout_
+is not supplied, the default value is zero.
+
 **Examples:**
 
-    10 K = INKEY
-    20 IF K = ASC("A") THEN 50
-    30 IF K = ASC("B") THEN 70
-    40 GOTO 10
-    50 PRINT "A WAS PRESSED"
-    60 GOTO 10
-    70 PRINT "B WAS PRESSED"
-    80 GOTO 10
+    10 K = INKEY(1000)
+    20 IF K = ASC("A") THEN 60
+    30 IF K = ASC("B") THEN 80
+    40 IF K = -1 THEN PRINT "TIMEOUT"
+    50 GOTO 10
+    60 PRINT "A WAS PRESSED"
+    70 GOTO 10
+    80 PRINT "B WAS PRESSED"
+    90 GOTO 10
 
 ---
 

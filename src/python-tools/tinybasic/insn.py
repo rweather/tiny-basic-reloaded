@@ -105,7 +105,7 @@ instructions = {
     'CLEAR':    { 'code': 0x60 },
     'LOAD':     { 'code': 0x61 },
     'SAVE':     { 'code': 0x62 },
-    'INKEY':    { 'code': 0x63, 'ae_stack': ['push'] },
+    'INKEY':    { 'code': 0x63, 'ae_stack': ['pop', 'push'] },
     'TSTB':     { 'code': 0x64, 'args': ['label8'], 'ae_stack': ['push'] },
     'FPMUL':    { 'code': 0x65, 'ae_stack': ['pop3', 'push'] },
 

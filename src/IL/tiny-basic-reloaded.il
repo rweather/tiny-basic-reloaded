@@ -481,7 +481,12 @@ ASC:        TST     ASC '('     ; Opening bracket after 'ASC'
             ASC                 ; Expect a string and convert to ASCII
 ASC1:       TST     ASC1 ')'    ; Closing bracket
             RTN                 ; Return to the caller
-INKEY:      INKEY               ; Input a keystroke without waiting
+INKEY:      TSTJ    INKEY1 '('  ; Do we have a timeout?
+            LIT     0           ; No, then use the default timeout of zero
+            INKEY               ; Input a keystroke without waiting
+            RTN                 ; Return to the caller
+INKEY1:     CALL    BEXPR1      ; Get the timeout parameter.
+            INKEY               ; Input a keystroke using the timeout
             RTN                 ; Return to the caller
 SEXPR4:     TSTJ    ASC 'ASC'   ; Check for keywords that need special handling
             TSTJ    INKEY 'INKEY'
@@ -494,8 +499,8 @@ SEXPR4:     TSTJ    ASC 'ASC'   ; Check for keywords that need special handling
 ; Bracketed expression
 ;
 BEXPR:      TST     BEXPR '('   ; Must start with '('
-            CALL    EXPR        ; Parse the expression inside the brackets
-BEXPR1:     TST     BEXPR1 ')'  ; Must end with ')'
+BEXPR1:     CALL    EXPR        ; Parse the expression inside the brackets
+BEXPR2:     TST     BEXPR2 ')'  ; Must end with ')'
             RTN
 ;
 ; Fixed-point multiplication.

@@ -24,6 +24,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <termios.h>
+#include <unistd.h>
+#include <poll.h>
+#include <errno.h>
 
 /**
  * @brief Match two characters.
@@ -616,6 +620,16 @@ static uint8_t tb_asc(tb_state_t *state)
     return ch;
 }
 
+/**
+ * @brief Performs a fixed-point multiplication.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] x The first value to multiply.
+ * @param[in] y The second value to multiply.
+ * @param[in] bit_count The number of bits of precision to correct for.
+ *
+ * @return The product of @a x and @a y.
+ */
 static tb_value_t tb_fpmul
     (tb_state_t *state, tb_value_t x, tb_value_t y, tb_value_t bit_count)
 {
@@ -629,6 +643,73 @@ static tb_value_t tb_fpmul
     } else {
         return (tb_value_t)result;
     }
+}
+
+/**
+ * @brief Get a key from the input with a timeout.
+ *
+ * @param[in,out] state Tiny BASIC state.
+ * @param[in] timeout The timeout in milliseconds.
+ *
+ * @return The key that was pressed, or -1 on timeout.
+ */
+static tb_value_t tb_inkey(tb_state_t *state, tb_value_t timeout)
+{
+    struct termios ti1;
+    struct termios ti2;
+    tb_value_t ch = -1;
+    uint8_t buf;
+    int result;
+
+    /* Put the device into raw mode temporarily */
+    if (tcgetattr(0, &ti1) < 0) {
+        return -1;
+    }
+    cfmakeraw(&ti2);
+    if (tcsetattr(0, TCSANOW, &ti2) < 0) {
+        return -1;
+    }
+
+    /* Wait for input to arrive */
+    for (;;) {
+        if (timeout < 0) {
+            buf = 0;
+            result = read(0, &buf, sizeof(buf));
+            if (result >= 0) {
+                ch = buf;
+                break;
+            } else if (errno != EINTR) {
+                break;
+            }
+        } else {
+            struct pollfd fds[1] = {0};
+            fds[0].fd = 0;
+            fds[0].events = POLLIN;
+            result = poll(fds, 1, timeout);
+            if (result > 0) {
+                /* Data is available, so read it */
+                buf = 0;
+                result = read(0, &buf, sizeof(buf));
+                if (result >= 0) {
+                    ch = buf;
+                }
+                break;
+            } else if (result == 0 || errno != EINTR) {
+                /* Timeout */
+                break;
+            }
+        }
+    }
+
+    /* Check for CTRL-C for BREAK */
+    if (ch == 0x03) {
+        state->do_break = 1;
+        ch = -1;
+    }
+
+    /* Restore the original terminal settings and return */
+    tcsetattr(0, TCSANOW, &ti1);
+    return ch;
 }
 
 void tb_exec_one(tb_state_t *state)
@@ -1142,8 +1223,8 @@ void tb_exec_one(tb_state_t *state)
         break;
 
     case TB_I_INKEY:
-        /* Input a keystroke without waiting, not implemented yet */
-        tb_push(state, -1);
+        /* Input a keystroke with a timeout */
+        tb_push(state, tb_inkey(state, tb_pop(state)));
         break;
 
     case TB_I_EXIT:
