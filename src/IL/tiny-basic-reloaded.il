@@ -316,11 +316,7 @@ LIST7:      LST
 ;
 ; RUN statement.
 ;
-RUN:        TSTN    RUN1        ; Do we have a starting line number?
-            DONE                ; Check for the end of the statement
-            CLEAR               ; Clear all variables
-            XFER                ; GOTO the line we want to start running from
-RUN1:       DONE                ; Check for the end of the statement
+RUN:        DONE                ; Check for the end of the statement
             RNXT                ; Select the first program line and execute it
 ;
 ; CLR statement.

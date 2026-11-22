@@ -341,12 +341,6 @@ TB_IL_LIST7:
     jsr     TB_OP_LST
     jmp     TB_OP_END
 TB_IL_RUN:
-    jsr     TB_OP_TSTN
-    bne     TB_IL_RUN1
-    jsr     TB_OP_DONE
-    jsr     TB_OP_CLEAR
-    jmp     TB_OP_XFER
-TB_IL_RUN1:
     jsr     TB_OP_DONE
     jmp     TB_OP_RNXT
 TB_IL_CLR:

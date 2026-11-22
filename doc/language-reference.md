@@ -838,19 +838,10 @@ with the next line.  It is used to add comments to the code.
 **Purpose:** Starts running the program.
 
 **Format:**
-> **RUN** [_linenumber_]
+> **RUN**
 
 **Description:**
 > **RUN** clears all variables to zero and starts running the program.
-If _linenumber_ is supplied, then the program starts running at that line.
-
-**Examples:**
-
-    RUN
-    RUN 100
-
-**Errors**:
-> `INVALID LINE NUMBER` - The _linenumber_ is not between 1 and 31999.
 
 ---
 
