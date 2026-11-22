@@ -23,7 +23,6 @@
 ;     | "CLR"
 ;     | "DIM" array-var-list
 ;     | "END"
-;     | "EXIT" [expression]
 ;     | "FOR" var "=" expression "TO" expression ["STEP" expression]
 ;     | "GOSUB" expression
 ;     | "GOTO" expression
@@ -32,7 +31,6 @@
 ;     | "IF" expression "GOTO" expression
 ;     | "INPUT" [string ';'] array-var-list
 ;     | "LIST" [list-range]
-;     | "LOAD" [string]
 ;     | "NEXT" [var]
 ;     | "POKE" expression "," expression
 ;     | "POP"
@@ -41,8 +39,12 @@
 ;     | "REM" (any character except <CR>)* <CR>
 ;     | "RETURN"
 ;     | "RUN" [number]
-;     | "SAVE" [string]
 ;     | "SIZE"
+;     | optional-statements
+; optional-statements ::=
+;       "EXIT" [expression]
+;     | "LOAD" [string]
+;     | "SAVE" [string]
 ;
 ; print-list ::= print-expression (("," | ";") print-expression)*
 ; print-expression ::=
@@ -144,10 +146,7 @@ STMT:       TSTJ    GOTO 'GOTO'
             TSTJ    CLR 'CLR'
             TSTJ    NEW 'NEW'
             TSTJ    SIZE 'SIZE'
-            TSTJ    LOAD 'LOAD'
-            TSTJ    SAVE 'SAVE'
             TSTJ    PRINT '?'   ; Alias for 'PRINT'
-            TSTJ    EXIT 'EXIT'
 ;
 ; If we get here, the statement is not part of the standard language.
 ; Dispatch any custom commands that have been added to the interpreter.
@@ -334,24 +333,6 @@ NEW:        DONE                ; Check for the end of the statement
 SIZE:       SIZE                ; Print the sizes
             END                 ; End of statement
 ;
-; LOAD statement.
-;
-LOAD:       LOAD                ; Perform the load
-            END                 ; End of statement
-;
-; SAVE statement.
-;
-SAVE:       SAVE                ; Perform the save
-            END                 ; End of statement
-;
-; EXIT statement to quit BASIC back to the operating system.
-;
-EXIT:       TSTEND  EXIT1       ; Do we have an argument?
-            LIT     0           ; Default exit status of zero
-            EXIT                ; Exit back to the operating system
-EXIT1:      CALL    EXPR        ; Evaluate the exit status
-            EXIT                ; Exit back to the operating system
-;
 ;-----------------------------------------------------------------------------
 ;
 ; Variables and arrays
@@ -490,7 +471,7 @@ SEXPR4:     TSTJ    ASC 'ASC'   ; Check for keywords that need special handling
             TSTOP   SEXPR3 RANDOM 'RND' ; Check for other built-in functions
             TSTOP   SEXPR3 PEEK 'PEEK'
             TSTOP   SEXPR3 ABS 'ABS'
-            CUSTFN  SEXPR3      ; Check for custom functions that extend BASIC
+            CUSTFN              ; Check for custom functions that extend BASIC
             ; Fall through to BEXPR
 ;
 ; Bracketed expression

@@ -45,6 +45,11 @@ parser.add_argument(
     default='',
     help='output C source code instead of binary, arg is the variable name'
 )
+parser.add_argument(
+    'extra_filenames',
+    nargs="*",
+    help='extra IL files to include'
+)
 args = parser.parse_args()
 
 # Assemble the input source.
@@ -52,7 +57,13 @@ assem = assem.Assembler(args.input_filename)
 with open(args.input_filename, 'r') as file:
     for line in file:
         assem.parse(line)
-    assem.check_undef()
+for extra_filename in args.extra_filenames:
+    with open(extra_filename, 'r') as file:
+        assem.filename = extra_filename
+        assem.linenum = 1
+        for line in file:
+            assem.parse(line)
+assem.check_undef()
 if assem.errors:
     sys.exit(1)
 

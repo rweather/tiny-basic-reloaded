@@ -44,8 +44,8 @@ tb-bytecode-original.h: ../IL/tiny-basic-original.il
 tb-bytecode-extended.h: ../IL/tiny-basic-extended.il
 	$(ILTOBYTECODE) -c tb_extended tb-bytecode-extended.h ../IL/tiny-basic-extended.il
 
-tb-bytecode-reloaded.h: ../IL/tiny-basic-reloaded.il
-	$(ILTOBYTECODE) -c tb_reloaded tb-bytecode-reloaded.h ../IL/tiny-basic-reloaded.il
+tb-bytecode-reloaded.h: ../IL/tiny-basic-reloaded.il ../IL/extras-os.il
+	$(ILTOBYTECODE) -c tb_reloaded tb-bytecode-reloaded.h ../IL/tiny-basic-reloaded.il ../IL/extras-os.il
 
 clean:
 	rm -f $(TARGET) $(OBJECTS) $(BYTECODE_DEPS)

@@ -71,6 +71,8 @@ class CodeGenerator6502:
     def generate(self):
         index = 0
         suppress = False
+        stmt_index = 0
+        func_index = 0
         for ins in self.code.code:
             # Suppress this instruction if requested.
             if suppress:
@@ -131,7 +133,7 @@ class CodeGenerator6502:
                         self.generate_insn('jsr', 'TB_OP_TST')
                     loc1 = ins['location']
                     loc2 = ins['label16']['location']
-                    if abs(loc1 - loc2) < 20:
+                    if abs(loc1 - loc2) < 15:
                         # Probably can reach the destination with a short jump.
                         self.generate_insn('beq', get_label_name(ins))
                     else:
@@ -168,12 +170,23 @@ class CodeGenerator6502:
                     self.generate_insn('jsr', 'TB_PUSH_LITERAL')
 
                 case 'CUSTOM':
-                    # Custom statements here.  Jump to syntax error only.
-                    self.generate_insn('jmp', 'TB_OP_ERR')
+                    # Custom statement handlers go here.
+                    if stmt_index < len(self.code.customstmts):
+                        self.generate_insn('jmp', 'TB_IL_' + self.code.customstmts[stmt_index])
+                        stmt_index += 1
+                    else:
+                        self.generate_insn('jmp', 'TB_OP_ERR')
 
                 case 'CUSTFN':
-                    # Custom functions here.  Nothing to do.
-                    pass
+                    # Custom function handlers go here.
+                    if len(self.code.customfuncs) != 0:
+                        if func_index < len(self.code.customfuncs):
+                            self.generate_insn('jmp', 'TB_IL_' + self.code.customfuncs[func_index])
+                            func_index += 1
+                        else:
+                            # Jump to 'BEXPR' once we run out of custom
+                            # function handlers.
+                            self.generate_insn('jmp', 'TB_IL_BEXPR')
 
                 case _:
                     # Default is a JSR or JMP to the opcode handler only.

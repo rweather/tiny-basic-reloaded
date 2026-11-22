@@ -1188,8 +1188,7 @@ void tb_exec_one(tb_state_t *state)
         break;
 
     case TB_I_CUSTFN:
-        /* Parse custom functions; nothing to do except skip the label */
-        ++(state->pc);
+        /* Parse custom functions; nothing to do in this version */
         break;
 
     case TB_I_ASC:

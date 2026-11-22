@@ -435,13 +435,6 @@ IRQDONE:
 NMIADR:
     rti
 ;
-; Operating system specific opcodes that are not supported on this platform.
-;
-EXIT:
-TB_OP_LOAD:
-TB_OP_SAVE:
-    jmp     TB_OP_ERR   ; Report a syntax error and stop.
-;
 ; System vectors.
 ;
     .org    $FFFA

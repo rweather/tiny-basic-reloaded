@@ -113,22 +113,10 @@ TB_IL_STMT:
     jsr     TB_OP_TST
     bne     *+5
     jmp     TB_IL_SIZE
-    ldx     #74
-    jsr     TB_OP_TST
-    bne     *+5
-    jmp     TB_IL_LOAD
-    ldx     #78
-    jsr     TB_OP_TST
-    bne     *+5
-    jmp     TB_IL_SAVE
     lda     #63
     jsr     TB_OP_TST1
     bne     *+5
     jmp     TB_IL_PRINT
-    ldx     #82
-    jsr     TB_OP_TST
-    bne     *+5
-    jmp     TB_IL_EXIT
     jmp     TB_OP_ERR
 TB_IL_IF:
     jsr     TB_IL_EXPR
@@ -136,7 +124,7 @@ TB_IL_IF:
     jsr     TB_OP_TST
     beq     TB_IL_IF3
 TB_IL_IF1:
-    ldx     #86
+    ldx     #74
     jsr     TB_OP_TST_SYNTAX
     jsr     TB_OP_IF
     jsr     TB_OP_TSTN
@@ -184,10 +172,10 @@ TB_IL_FOR1:
     jsr     TB_IL_EXPR
     jsr     TB_OP_STOREV
 TB_IL_FOR2:
-    ldx     #90
+    ldx     #78
     jsr     TB_OP_TST_SYNTAX
     jsr     TB_IL_EXPR
-    ldx     #92
+    ldx     #80
     jsr     TB_OP_TST
     bne     TB_IL_FOR3
     jsr     TB_IL_EXPR
@@ -237,7 +225,7 @@ TB_IL_PRINT3:
     jsr     TB_OP_NLINE
     jmp     TB_OP_END
 TB_IL_PRINT4:
-    ldx     #96
+    ldx     #84
     jsr     TB_OP_TST
     bne     TB_IL_PRINT7
 TB_IL_PRINT5:
@@ -245,7 +233,7 @@ TB_IL_PRINT5:
     jsr     TB_OP_PRC
     jmp     TB_IL_PRINT1
 TB_IL_PRINT7:
-    ldx     #100
+    ldx     #88
     jsr     TB_OP_TST
     bne     TB_IL_PRINT8
     jsr     TB_IL_BEXPR
@@ -352,22 +340,6 @@ TB_IL_NEW:
 TB_IL_SIZE:
     jsr     TB_OP_SIZE
     jmp     TB_OP_END
-TB_IL_LOAD:
-    jsr     TB_OP_LOAD
-    jmp     TB_OP_END
-TB_IL_SAVE:
-    jsr     TB_OP_SAVE
-    jmp     TB_OP_END
-TB_IL_EXIT:
-    jsr     TB_OP_TSTEND
-    bne     TB_IL_EXIT1
-    lda     #0
-    ldy     #0
-    jsr     TB_PUSH_LITERAL
-    jmp     TB_OP_EXIT
-TB_IL_EXIT1:
-    jsr     TB_IL_EXPR
-    jmp     TB_OP_EXIT
 TB_IL_VARRAY:
     jsr     TB_OP_TSTA
     bne     TB_IL_V0
@@ -395,7 +367,7 @@ TB_IL_EXPR:
     jsr     TB_OP_CHKSTK
     jsr     TB_IL_AEXPR
 TB_IL_EXPR1:
-    ldx     #103
+    ldx     #91
     jsr     TB_OP_TST
     bne     TB_IL_EXPR2
     jsr     TB_IL_AEXPR
@@ -404,7 +376,7 @@ TB_IL_EXPR1:
 TB_IL_EXPR2:
     rts
 TB_IL_AEXPR:
-    ldx     #105
+    ldx     #93
     jsr     TB_OP_TST
     beq     TB_IL_AEXPR1
     jsr     TB_IL_REXPR
@@ -413,10 +385,10 @@ TB_IL_AEXPR1:
     jsr     TB_IL_REXPR
     jsr     TB_OP_LNOT
 TB_IL_AEXPR2:
-    ldx     #108
+    ldx     #96
     jsr     TB_OP_TST
     bne     TB_IL_EXPR2
-    ldx     #105
+    ldx     #93
     jsr     TB_OP_TST
     beq     TB_IL_AEXPR4
     jsr     TB_IL_REXPR
@@ -429,27 +401,27 @@ TB_IL_AEXPR4:
     jmp     TB_IL_AEXPR3
 TB_IL_REXPR:
     jsr     TB_IL_ASEXPR
-    ldx     #111
+    ldx     #99
     ldy     #0
     jsr     TB_OP_TSTOP
     beq     TB_IL_REXPR1
-    ldx     #113
+    ldx     #101
     ldy     #2
     jsr     TB_OP_TSTOP
     beq     TB_IL_REXPR1
-    ldx     #115
+    ldx     #103
     ldy     #4
     jsr     TB_OP_TSTOP
     beq     TB_IL_REXPR1
-    ldx     #117
+    ldx     #105
     ldy     #6
     jsr     TB_OP_TSTOP
     beq     TB_IL_REXPR1
-    ldx     #119
+    ldx     #107
     ldy     #8
     jsr     TB_OP_TSTOP
     beq     TB_IL_REXPR1
-    ldx     #121
+    ldx     #109
     ldy     #10
     jsr     TB_OP_TSTOP
     beq     TB_IL_REXPR1
@@ -460,19 +432,19 @@ TB_IL_REXPR1:
 TB_IL_ASEXPR:
     jsr     TB_IL_MEXPR
 TB_IL_ASEXPR1:
-    ldx     #123
+    ldx     #111
     ldy     #12
     jsr     TB_OP_TSTOP
     beq     TB_IL_ASEXPR2
-    ldx     #125
+    ldx     #113
     ldy     #14
     jsr     TB_OP_TSTOP
     beq     TB_IL_ASEXPR2
-    ldx     #127
+    ldx     #115
     ldy     #16
     jsr     TB_OP_TSTOP
     beq     TB_IL_ASEXPR2
-    ldx     #130
+    ldx     #118
     ldy     #18
     jsr     TB_OP_TSTOP
     beq     TB_IL_ASEXPR2
@@ -484,31 +456,31 @@ TB_IL_ASEXPR2:
 TB_IL_MEXPR:
     jsr     TB_IL_UEXPR
 TB_IL_MEXPR1:
-    ldx     #133
+    ldx     #121
     ldy     #20
     jsr     TB_OP_TSTOP
     beq     TB_IL_MEXPR2
-    ldx     #135
+    ldx     #123
     ldy     #22
     jsr     TB_OP_TSTOP
     beq     TB_IL_MEXPR2
-    ldx     #137
+    ldx     #125
     ldy     #24
     jsr     TB_OP_TSTOP
     beq     TB_IL_MEXPR2
-    ldx     #140
+    ldx     #128
     ldy     #26
     jsr     TB_OP_TSTOP
     beq     TB_IL_MEXPR2
-    ldx     #143
+    ldx     #131
     ldy     #28
     jsr     TB_OP_TSTOP
     beq     TB_IL_MEXPR2
-    ldx     #146
+    ldx     #134
     ldy     #30
     jsr     TB_OP_TSTOP
     beq     TB_IL_MEXPR2
-    ldx     #149
+    ldx     #137
     ldy     #32
     jsr     TB_OP_TSTOP
     beq     TB_IL_MEXPR2
@@ -524,7 +496,7 @@ TB_IL_UEXPR:
     lda     #45
     jsr     TB_OP_TST1
     beq     TB_IL_UEXPR1
-    ldx     #153
+    ldx     #141
     jsr     TB_OP_TST
     bne     TB_IL_SEXPR
     jsr     TB_IL_SEXPR
@@ -568,24 +540,24 @@ TB_IL_INKEY1:
     jsr     TB_IL_BEXPR1
     jmp     TB_OP_INKEY
 TB_IL_SEXPR4:
-    ldx     #157
+    ldx     #145
     jsr     TB_OP_TST
     beq     TB_IL_ASC
-    ldx     #160
+    ldx     #148
     jsr     TB_OP_TST
     beq     TB_IL_INKEY
-    ldx     #165
+    ldx     #153
     jsr     TB_OP_TST
     beq     TB_IL_FPMUL
-    ldx     #170
+    ldx     #158
     ldy     #34
     jsr     TB_OP_TSTOP
     beq     TB_IL_SEXPR3
-    ldx     #173
+    ldx     #161
     ldy     #36
     jsr     TB_OP_TSTOP
     beq     TB_IL_SEXPR3
-    ldx     #177
+    ldx     #165
     ldy     #38
     jsr     TB_OP_TSTOP
     beq     TB_IL_SEXPR3
@@ -636,9 +608,6 @@ TB_TOKTAB:
     .db     "CL", $D2
     .db     "NE", $D7
     .db     "SIZ", $C5
-    .db     "LOA", $C4
-    .db     "SAV", $C5
-    .db     "EXI", $D4
     .db     "THE", $CE
     .db     "T", $CF
     .db     "STE", $D0

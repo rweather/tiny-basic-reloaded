@@ -37,6 +37,8 @@ class Assembler:
         self.linenum = 1
         self.filename = filename
         self.currlabels = []
+        self.customstmts = []
+        self.customfuncs = []
 
     '''
     Parse a line from the assembly input.
@@ -59,6 +61,31 @@ class Assembler:
         if len(fields) == 0:
             # Empty line, nothing to do.
             return
+
+        # Check for 'CUSTOM-STATEMENTS' and 'CUSTOM-FUNCTIONS'
+        # which allow extensions to be added to the language.
+        if fields[0] == 'CUSTOM-STATEMENTS':
+            label_name = 'CUSTOM_' + str(len(self.customstmts) + 1)
+            if not self.set_label(label_name, linenum):
+                self.error(self.filename, linenum, 'label "%s" already defined' % label_name)
+                return
+            self.currlabels.append(label_name)
+            self.customstmts.append(label_name)
+            return
+        elif fields[0] == 'CUSTOM-FUNCTIONS':
+            label_name = 'CUSTFN_' + str(len(self.customfuncs) + 1)
+            if not self.set_label(label_name, linenum):
+                self.error(self.filename, linenum, 'label "%s" already defined' % label_name)
+                return
+            self.currlabels.append(label_name)
+            self.customfuncs.append(label_name)
+            return
+        elif fields[0] == 'CUSTOM-STATEMENTS-END':
+            # Insert another custom statement placeholder here.
+            fields = ['CUSTOM']
+        elif fields[0] == 'CUSTOM-FUNCTIONS-END':
+            # Insert another custom function placeholder here.
+            fields = ['CUSTFN']
 
         # Does the line start with one or more labels?
         label_name = ''
@@ -230,6 +257,8 @@ class Assembler:
     def to_bytecode(self):
         # Compute the physical address of all instructions.
         address = 0
+        stmt_index = 0
+        func_index = 0
         for icode in self.code:
             if 'labels' in icode:
                 # Assign the current physical address to the labels.
@@ -247,12 +276,45 @@ class Assembler:
                         size += 2
                     elif arg_type == 'string':
                         size += len(icode['string'])
+            if icode['opcode'] == 'CUSTOM' and stmt_index < len(self.customstmts):
+                # This 'CUSTOM' will be replaced with a jump.
+                size += 2
+                stmt_index += 1
+            elif icode['opcode'] == 'CUSTFN' and len(self.customfuncs) != 0:
+                # This 'CUSTFN' will be replaced with a jump.
+                size += 2
+                func_index += 1
             address += size
 
         # Generate the bytecode.
         bytecode = []
+        stmt_index = 0
+        func_index = 0
         for icode in self.code:
             info = icode['info']
+            if icode['opcode'] == 'CUSTOM' and stmt_index < len(self.customstmts):
+                # Jump to the next custom statement handler.
+                bytecode.append(0x02)
+                offset = self.get_label_address(self.customstmts[stmt_index]) - icode['address']
+                bytecode.append(offset & 0xFF)
+                bytecode.append((offset >> 8) & 0xFF)
+                stmt_index += 1
+                continue
+            elif icode['opcode'] == 'CUSTFN':
+                if func_index < len(self.customfuncs):
+                    # Jump to the next custom function handler.
+                    bytecode.append(0x02)
+                    offset = self.get_label_address(self.customfuncs[func_index]) - icode['address']
+                    bytecode.append(offset & 0xFF)
+                    bytecode.append((offset >> 8) & 0xFF)
+                    func_index += 1
+                    continue
+                elif len(self.customfuncs) != 0:
+                    # Jump to BEXPR to continue expression parsing.
+                    bytecode.append(0x02)
+                    offset = self.get_label_address('BEXPR') - icode['address']
+                    bytecode.append(offset & 0xFF)
+                    bytecode.append((offset >> 8) & 0xFF)
             bytecode.append(info['code'])
             if 'args' in info:
                 for arg_type in info['args']:

@@ -97,7 +97,7 @@ instructions = {
     'TSTOP':    { 'code': 0x58, 'args': ['label8', 'opcode', 'string'], 'ae_stack': ['push'] },
     'APPLY':    { 'code': 0x59, 'ae_stack': ['pop3', 'push'] },
     'APPLYFN':  { 'code': 0x5A, 'ae_stack': ['pop2', 'push'] },
-    'CUSTFN':   { 'code': 0x5B, 'args': ['label8'] },
+    'CUSTFN':   { 'code': 0x5B },
     'ASC':      { 'code': 0x5C, 'ae_stack': ['push'] },
     'POKE':     { 'code': 0x5D, 'ae_stack': ['pop2'] },
     'POP':      { 'code': 0x5E },

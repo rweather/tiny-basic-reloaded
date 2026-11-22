@@ -111,12 +111,6 @@ CBREAK_no:
     lda     #1                  ; Clear Z on exit for not CTRL-C.
     rts
 ;
-; Exit back to the operating system with the status code in A.
-;
-EXIT:
-    sta     $C7EE
-    jmp     TB_OP_ERR           ; Shouldn't get here, but just in case.
-;
 ; Print the byte in A in hexadecimal.  For testing purposes only.
 ; Preserves A, X, and Y.
 ;
@@ -141,12 +135,6 @@ PRHEX2:
     adc     #6
 PRHEX3:
     jmp     COUT
-;
-; Operating system specific opcodes that are not supported on this platform.
-;
-TB_OP_LOAD:
-TB_OP_SAVE:
-    jmp     TB_OP_ERR           ; Report a syntax error and stop.
 ;
 ; System vectors.
 ;

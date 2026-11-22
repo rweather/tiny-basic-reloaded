@@ -647,10 +647,10 @@ Calls the machine language routine at that memory address.
 Handles custom statements that extend the BASIC language.  If there are
 none, raise a syntax error.
 
-### CUSTFN label
+### CUSTFN
 
-Handles custom functions that extend the BASIC language.  Jump to
-"label" if a custom function name is found.
+Handles custom functions that extend the BASIC language.  Does nothing
+if there are no custom functions.
 
 ### LOAD
 

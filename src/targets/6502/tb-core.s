@@ -55,9 +55,6 @@
 ;       Prints a CR-LF sequence to the output device.  Must preserve A, X, Y.
 ; CLS
 ;       Initialize text screen mode and clear the screen.
-; EXIT
-;       Exit back to the operating system with the status code in A.
-;       Jump to TB_OP_ERR if it is not possible to exit.
 ;
 ; The following may be optionally defined:
 ;
@@ -3468,13 +3465,3 @@ TB_OP_ASC_NUL:
     rts
 TB_OP_ASC_ERROR:
     jmp     TB_OP_ERR
-;
-; "EXIT" opcode handler.
-;
-; Exits back to the operating system with the status code in TB_ACCUM.
-;
-TB_OP_EXIT:
-    lda     TB_ACCUM
-    ldx     TB_STACK_SAVE       ; Unwind the stack to the starting point.
-    txs
-    jmp     EXIT

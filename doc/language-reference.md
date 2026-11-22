@@ -864,7 +864,8 @@ saves to a file on disk.
     SAVE "hello.bas"
 
 **Errors**:
-> `MISSING OPERAND` - The _filename_ is required but was not supplied.<br/>
+> `SYNTAX ERROR` - Saving is not supported on this platform.<br/>
+`MISSING OPERAND` - The _filename_ is required but was not supplied.<br/>
 `INVALID FILENAME` - The _filename_ is not valid or could not be created.
 
 ---
