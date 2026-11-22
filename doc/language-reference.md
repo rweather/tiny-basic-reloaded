@@ -76,6 +76,7 @@ shows the operator precedence from highest to lowest:
 
 ## Function index
 
+* [ABS](#abs) - Computes the absolute value of a number.
 * [ASC](#asc) - Converts the first character of a string into its ASCII code.
 * [CHR$](#chrs) - Prints a character by its ASCII code.
 * [INKEY](#inkey) - Gets input a key at a time without waiting.
@@ -122,6 +123,21 @@ in use by Tiny BASIC Reloaded at the moment.
 <tr><td>27</td><td><tt>NA</tt></td><td><tt>NOT AN ARRAY</tt></td></tr>
 <tr><td>28</td><td><tt>IF</tt></td><td><tt>INVALID FILENAME</tt></td></tr>
 </table>
+
+---
+
+<a name="abs"/>
+### ABS
+
+**Purpose:** Computes the absolute value of a number.
+
+**Format:**
+> **ABS**(_expression_)
+
+**Description:**
+> Evaluates to the absolute value of _expression_.  Note that if
+_expression_ is -32768, then its absolute value will also be -32768
+due to how 2's complement arithmetic works.
 
 ---
 
@@ -369,7 +385,7 @@ _x_ and _y_ are evaluated and multiplied to produce a double-precision
 integer intermediate result.  The intermediate result is then
 shifted right by _bits_ bit positions.
 
-> The _bits_ parameter must be a literal number between 1 and 14.
+> The _bits_ parameter must be a literal number between 0 and 14.
 It cannot be a variable or a complex expression.
 
 > Fixed-point multiplication is provided to make up for the lack of
@@ -398,7 +414,7 @@ cannot be computed with regular 16-bit multiplication and division.
 
 **Errors**:
 > `OVERFLOW ERROR` - The final result does not fit in a 16-bit integer.<br/>
-`ILLEGAL FUNCTION CALL` - The number of _bits_ is outside the range 1 to 14.
+`ILLEGAL FUNCTION CALL` - The number of _bits_ is outside the range 0 to 14.
 
 ---
 
@@ -722,6 +738,9 @@ longer return to that point.
     RUN
     I am here
 
+**Errors**:
+> `RETURN WITHOUT GOSUB` - **POP** encountered without a corresponding **GOSUB**.
+
 ---
 
 <a name="print"/>
@@ -889,8 +908,7 @@ saves to a file on disk.
 
 **Description:**
 > **SPC**(_expression_) evaluates the _expression_ and prints
-that may spaces.  If _expression_ is negative, it will be
-treated the same as zero.
+that may spaces.  The number of spaces is limited to between 0 and 255.
 
 > **SPC** can only be used from within a **PRINT** statement as the
 language does not support string variables.
@@ -900,5 +918,9 @@ language does not support string variables.
     10 PRINT "A";SPC(5);"B"
     RUN
     A     B
+
+**Errors**:
+> `ILLEGAL FUNCTION CALL` - The value of _expression_ was negative or
+greater than 255.
 
 ---

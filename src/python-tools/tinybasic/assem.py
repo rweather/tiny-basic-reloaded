@@ -105,7 +105,11 @@ class Assembler:
                     return
                 if arg_type == 'label8' or arg_type == 'label16':
                     # Reference to a label.
-                    icode[arg_type] = self.ref_label(fields[0].upper(), linenum)
+                    label = self.ref_label(fields[0].upper(), linenum)
+                    icode[arg_type] = label
+                    if opcode == 'CALL':
+                        # Remember that CALL refers to this label.
+                        label['call_target'] = True
                 elif arg_type == 'string':
                     # Literal string.  It is possible that there were
                     # embedded spaces in the original.  Restore them.
@@ -123,7 +127,8 @@ class Assembler:
                     # Opcode name.
                     opcode_name = fields[0].upper()
                     if opcode_name in insn.instructions:
-                        icode[arg_type] = insn.instructions[opcode_name]['code']
+                        icode['operator_id'] = insn.instructions[opcode_name]['code']
+                        icode['operator_name'] = opcode_name
                     else:
                         self.error(self.filename, linenum, 'invalid opcode name')
                         return
@@ -278,7 +283,7 @@ class Assembler:
                             bytecode.append(c)
                     elif arg_type == 'opcode':
                         # Opcode number.
-                        bytecode.append(icode['opcode'])
+                        bytecode.append(icode['operator_id'])
                     elif arg_type == 'literal8':
                         # Literal 8-bit constant.
                         bytecode.append(icode['literal8'])

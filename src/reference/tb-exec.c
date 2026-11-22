@@ -266,7 +266,7 @@ int tb_match_number
         }
     } else if (opcode == TB_I_TSTB) {
         /* Check if the number is valid as a bit number */
-        if (is_neg || value < 1 || value > (int)(sizeof(tb_value_t) * 8 - 2)) {
+        if (is_neg || value > (int)(sizeof(tb_value_t) * 8 - 2)) {
             tb_error(state, TB_E_ILLFUNC);
             return -1;
         }
@@ -478,6 +478,7 @@ static tb_value_t tb_apply1(tb_state_t *state, uint8_t opcode, tb_value_t x)
     case TB_I_NEG:      return -x;
     case TB_I_BNOT:     return ~x;
     case TB_I_LNOT:     return !x;
+    case TB_I_ABS:      return x < 0 ? -x : x;
 
     case TB_I_RANDOM:
         if (x > 0) {
@@ -885,6 +886,7 @@ void tb_exec_one(tb_state_t *state)
     case TB_I_NEG:
     case TB_I_BNOT:
     case TB_I_LNOT:
+    case TB_I_ABS:
         /* Apply a unary operator */
         tb_push(state, tb_apply1(state, insn, tb_pop(state)));
         break;
@@ -1056,6 +1058,10 @@ void tb_exec_one(tb_state_t *state)
     case TB_I_TAB:
         /* Output a number of spaces, as given by the value on AESTK */
         x = tb_pop(state);
+        if (x < 0 || x > 255) {
+            tb_error(state, TB_E_ILLFUNC);
+            break;
+        }
         while (x > 0) {
             if (state->do_break) {
                 break;

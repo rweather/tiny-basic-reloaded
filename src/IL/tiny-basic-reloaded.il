@@ -493,6 +493,7 @@ SEXPR4:     TSTJ    ASC 'ASC'   ; Check for keywords that need special handling
             TSTJ    FPMUL 'FPMUL'
             TSTOP   SEXPR3 RANDOM 'RND' ; Check for other built-in functions
             TSTOP   SEXPR3 PEEK 'PEEK'
+            TSTOP   SEXPR3 ABS 'ABS'
             CUSTFN  SEXPR3      ; Check for custom functions that extend BASIC
             ; Fall through to BEXPR
 ;

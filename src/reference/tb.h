@@ -129,6 +129,7 @@ extern "C" {
 #define TB_I_CMPGT          0x7F    /**< Compare numbers for greater than */
 #define TB_I_CMPLE          0x80    /**< Compare numbers for less or equal */
 #define TB_I_CMPGE          0x81    /**< Compare numbers for greater or equal */
+#define TB_I_ABS            0x82    /**< Absolute value of an integer */
 
 /* Error codes that are compatible with TRS-80 Level II BASIC.
  * Not all of these are in use at the moment.

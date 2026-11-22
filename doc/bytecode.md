@@ -112,7 +112,12 @@ number, then push the value onto AESTK and continue with the next instruction.
 ### TSTL label
 
 Special case of "TSTN" that also checks that the number is between
-1 and 31999 for a line number.
+1 and 31999 for a line number.  Report "INVALID LINE NUMBER" if out of range.
+
+### TSTB label
+
+Special case of "TSTN" that also checks that the number is between 0 and 14
+for a FPMUL bit count.  Report "ILLEGAL FUNCTION CALL" if out of range.
 
 ### TSTCR label
 
@@ -314,10 +319,29 @@ PRINT statements.  Tiny BASIC Reloaded does not print a space for ";".
 
 ### TAB
 
-Pops a value from AESTK and prints that many spaces.
+Pops a value from AESTK and prints that many spaces.  Implementations should
+report "ILLEGAL FUNCTION CALL" if the number is negative or greater than 255.
 
 <a name="input"/>
 ## Input instructions
+
+### GETLN
+
+Gets the next line of input, terminated by a NUL.  A maximum of 252
+characters excluding the NUL is allowed.
+
+GETLN should normalise the line by removing redundant whitespace
+and converting any letter outside of double-quotes or REM into uppercase.
+For example,
+
+    10    x = inKey:  print  "Hello   World":rem This is a comment.
+
+would turn in:
+
+    10 X = INKEY: PRINT "Hello   World":REM This is a comment.
+
+The "TST" opcodes do not need to perform case conversion during parsing.
+The "TST" opcodes can assume uppercase.
 
 ### INNUM
 
@@ -331,6 +355,9 @@ if there is no key available.  Negative means to wait indefinitely.
 
 If a key is available, push its ASCII character code onto AESTK.
 Otherwise push -1 onto AESTK if a key is not available within the timeout.
+
+See the list of [Generic Keycodes](keycodes.md) for recommended
+keycodes to return for special keys to aid in portability between systems.
 
 <a name="arith"/>
 ## Arithmetic instructions
@@ -349,6 +376,15 @@ product.
 Pops the top two values from AESTK, divides them, and pushes their
 quotient or remainder.  Raises a "DIVISION BY ZERO" error if the
 second value is zero.
+
+### NEG
+
+Pops the top value from AESTK, negates it, and pushes the result.
+
+### ABS
+
+Pops the top value from AESTK, computes its absolute value,
+and pushes the result.
 
 ## FPMUL
 
@@ -559,7 +595,7 @@ If the current line is empty, then delete the line from the program instead.
 The line number is assumed to be the result of the TSTL instruction which
 verifies that the value is between 1 and 31999.
 
-May report "OUT OF MEMORY" if the program is too large.
+May report "OUT OF MEMORY" if the program is too large to include the new line.
 
 ### LIST0
 
@@ -568,11 +604,13 @@ Set up to list the entire BASIC program.
 ### LIST1
 
 Set up to list a specific line of the BASIC program that is on AESTK.
+Report "INVALID LINE NUMBER" if the line does not exist.
 
 ### LIST2
 
 Set up to list a range of lines of the BASIC program, where the first and
-last line numbers are on AESTK.
+last line numbers are on AESTK.  The first and last line numbers do
+not need to exist.
 
 ### LST
 
@@ -592,10 +630,12 @@ first character onto AESTK.
 
 Pops the top value from AESTK and interprets it as a memory address.
 Read the value at the memory address and push it onto AESTK.
+On 8-bit systems, the high byte is set to zero.
 
 ### POKE
 
-Pops the top two values from AESTK and writes to memory.
+Pops the top two values from AESTK and writes to memory.  The high
+byte of the value to poke is ignored on 8-bit systems.
 
 ### MCALL
 

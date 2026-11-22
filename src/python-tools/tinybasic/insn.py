@@ -127,4 +127,5 @@ instructions = {
     'CMPGT':    { 'code': 0x7F, 'ae_stack': ['pop2', 'push'] },
     'CMPLE':    { 'code': 0x80, 'ae_stack': ['pop2', 'push'] },
     'CMPGE':    { 'code': 0x81, 'ae_stack': ['pop2', 'push'] },
+    'ABS':      { 'code': 0x82, 'ae_stack': ['pop', 'push'] },
 }

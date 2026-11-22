@@ -3,24 +3,20 @@ Tiny BASIC Reloaded
 
 ## History
 
-[Tiny BASIC](https://en.wikipedia.org/wiki/Tiny_BASIC) was invented in
-1975 as a reaction to Bill Gates' letter complaining about early
-microcomputer enthusiasts pirating Microsoft's implementation of Altair BASIC.
-At the time, the microcomputer community was all about experimentation and
-sharing.  Gates' letter and charging for software in general was seen
-as an afront to the community spirit.
+[Tiny BASIC](https://en.wikipedia.org/wiki/Tiny_BASIC) was created by
+contributors to the "People's Computer Company" (PCC) newletter,
+which over time evolved into Doctor Dobb's Journal.  Tiny BASIC Extended
+followed, which added more features from standard BASIC like arrays
+and FOR..NXT loops (yes, "NXT" not "NEXT").
 
 There is no single implementation of Tiny BASIC from the era.  And that's
 kind of the point.  Tiny BASIC is a specification for a minimal version of
 BASIC that can be easily implemented on the limited microcomputers of the era.
 And then extended however the user wanted.
 
-The original specification was in an issue of the People's Computer
-Company (PCC) newsletter, which over time evolved into Doctor Dobb's Journal.
-
 Interestingly, it is an interpreter on top of an interpreter!  Tiny BASIC
 itself is written in an intermediate bytecode language called IL and the
-full listing of the original IL is in the first PCC newsletter.  The hobbyist
+full listing of the original IL is in an early PCC newsletter.  The hobbyist
 need only write an IL interpreter for their machine and they have a BASIC.
 And due to the compact nature of IL, it was tiny!
 
@@ -62,7 +58,8 @@ may be directly compiled to the target depending on space constraints.
 
 This approach reduces the implementation burden of BASIC on new targets.
 To port to a target, the user need only supply I/O, memory management,
-opcode helper functions, and the automated translator.
+opcode helper functions, and the automated translator.  Still a lot,
+but the hard part of the parser and expression evaluator is done for you.
 
 An implementation in C of the bytecode interpreter is provided under
 [src/reference](src/reference) to test changes to the language, and to
@@ -75,7 +72,7 @@ expected behaviour of each bytecode.
 Tiny BASIC Reloaded borrows a number of features from other BASIC's to
 provide a reasonable set of capabilities in an integer-only BASIC.
 This implementation goes well beyond "Tiny" with features from more
-featureful versions of BASIC.
+powerful versions of BASIC.
 
 Inspiration was taken from Tiny BASIC, Tiny BASIC Extended,
 AppleSoft BASIC, Apple II Integer BASIC, and TRS-80 Level II BASIC.
@@ -85,10 +82,11 @@ missing something like INKEY.
 * 26 16-bit integer variables A to Z.
 * 26 arrays of 16-bit integers which can be dimensioned with 1 or 2 dimensions.
 * Commands: CALL, CLR, DIM, END, FOR...NEXT, GOSUB...RETURN, GOTO,
-IF...THEN, IF...GOTO, INPUT, LET, LIST, LOAD, PEEK, POKE, POP, PRINT,
-REM, RND, RUN, SAVE, SIZE, SPC.
-* Operators: +, -, &#42;, /, MOD, AND, OR, NOT, BAND, BOR, BNOT, XOR,
+IF...THEN, IF...GOTO, INPUT, LET, LIST, LOAD, POKE, POP, PRINT,
+REM, RUN, SAVE, SIZE, SPC.
+* Operators: +, -, &#42;, /, MOD, ABS, AND, OR, NOT, BAND, BOR, BNOT, XOR,
 SHL, SHR, LSL, =, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=.
+* Built-in functions: ABS, PEEK, RND.
 * Some limited string support with ASC and CHR$.
 * Some limited fixed-point support with +, -, and FPMUL in place of
 true floating-point.
@@ -98,11 +96,27 @@ interactive programs like video games.
 See the [Language Reference Manual](doc/language-reference.md) for
 more information.
 
+## Targets
+
+The following targets are currently supported:
+
+* C reference implementation
+* MOS 6502A (need the "A" for the fixed "ROR" instruction)
+
+More to come!
+
 ## Documentation
 
 * [Language Reference Manual](doc/language-reference.md)
 * [IL Bytecode Reference](doc/bytecode.md)
 * [Memory Management](doc/memory-management.md)
+
+## Future work
+
+* Lots more targets.
+* Commands like CLS, MOVE, COLOR, etc for richer text mode operations.
+* String handling, possibly based on how Apple II Integer BASIC does strings.
+* Alternative language front-ends; e.g. for [INTERPROGRAM](https://github.com/rweather/interprogram).
 
 ## License
 
