@@ -240,6 +240,13 @@ TB_IL_PRINT7:
     jsr     TB_OP_TAB
     jmp     TB_IL_PRINT1
 TB_IL_PRINT8:
+    ldx     #91
+    jsr     TB_OP_TST
+    bne     TB_IL_PRINT9
+    jsr     TB_IL_BEXPR
+    jsr     TB_OP_PRHEX
+    jmp     TB_IL_PRINT1
+TB_IL_PRINT9:
     jsr     TB_IL_EXPR
     jsr     TB_OP_PRN
     jmp     TB_IL_PRINT1
@@ -367,7 +374,7 @@ TB_IL_EXPR:
     jsr     TB_OP_CHKSTK
     jsr     TB_IL_AEXPR
 TB_IL_EXPR1:
-    ldx     #91
+    ldx     #94
     jsr     TB_OP_TST
     bne     TB_IL_EXPR2
     jsr     TB_IL_AEXPR
@@ -376,7 +383,7 @@ TB_IL_EXPR1:
 TB_IL_EXPR2:
     rts
 TB_IL_AEXPR:
-    ldx     #93
+    ldx     #96
     jsr     TB_OP_TST
     beq     TB_IL_AEXPR1
     jsr     TB_IL_REXPR
@@ -385,10 +392,10 @@ TB_IL_AEXPR1:
     jsr     TB_IL_REXPR
     jsr     TB_OP_LNOT
 TB_IL_AEXPR2:
-    ldx     #96
+    ldx     #99
     jsr     TB_OP_TST
     bne     TB_IL_EXPR2
-    ldx     #93
+    ldx     #96
     jsr     TB_OP_TST
     beq     TB_IL_AEXPR4
     jsr     TB_IL_REXPR
@@ -401,27 +408,27 @@ TB_IL_AEXPR4:
     jmp     TB_IL_AEXPR3
 TB_IL_REXPR:
     jsr     TB_IL_ASEXPR
-    ldx     #99
+    ldx     #102
     ldy     #0
     jsr     TB_OP_TSTOP
     beq     TB_IL_REXPR1
-    ldx     #101
+    ldx     #104
     ldy     #2
     jsr     TB_OP_TSTOP
     beq     TB_IL_REXPR1
-    ldx     #103
+    ldx     #106
     ldy     #4
     jsr     TB_OP_TSTOP
     beq     TB_IL_REXPR1
-    ldx     #105
+    ldx     #108
     ldy     #6
     jsr     TB_OP_TSTOP
     beq     TB_IL_REXPR1
-    ldx     #107
+    ldx     #110
     ldy     #8
     jsr     TB_OP_TSTOP
     beq     TB_IL_REXPR1
-    ldx     #109
+    ldx     #112
     ldy     #10
     jsr     TB_OP_TSTOP
     beq     TB_IL_REXPR1
@@ -432,19 +439,19 @@ TB_IL_REXPR1:
 TB_IL_ASEXPR:
     jsr     TB_IL_MEXPR
 TB_IL_ASEXPR1:
-    ldx     #111
+    ldx     #114
     ldy     #12
     jsr     TB_OP_TSTOP
     beq     TB_IL_ASEXPR2
-    ldx     #113
+    ldx     #116
     ldy     #14
     jsr     TB_OP_TSTOP
     beq     TB_IL_ASEXPR2
-    ldx     #115
+    ldx     #118
     ldy     #16
     jsr     TB_OP_TSTOP
     beq     TB_IL_ASEXPR2
-    ldx     #118
+    ldx     #121
     ldy     #18
     jsr     TB_OP_TSTOP
     beq     TB_IL_ASEXPR2
@@ -456,31 +463,31 @@ TB_IL_ASEXPR2:
 TB_IL_MEXPR:
     jsr     TB_IL_UEXPR
 TB_IL_MEXPR1:
-    ldx     #121
+    ldx     #124
     ldy     #20
     jsr     TB_OP_TSTOP
     beq     TB_IL_MEXPR2
-    ldx     #123
+    ldx     #126
     ldy     #22
     jsr     TB_OP_TSTOP
     beq     TB_IL_MEXPR2
-    ldx     #125
+    ldx     #128
     ldy     #24
     jsr     TB_OP_TSTOP
     beq     TB_IL_MEXPR2
-    ldx     #128
+    ldx     #131
     ldy     #26
     jsr     TB_OP_TSTOP
     beq     TB_IL_MEXPR2
-    ldx     #131
+    ldx     #134
     ldy     #28
     jsr     TB_OP_TSTOP
     beq     TB_IL_MEXPR2
-    ldx     #134
+    ldx     #137
     ldy     #30
     jsr     TB_OP_TSTOP
     beq     TB_IL_MEXPR2
-    ldx     #137
+    ldx     #140
     ldy     #32
     jsr     TB_OP_TSTOP
     beq     TB_IL_MEXPR2
@@ -496,7 +503,7 @@ TB_IL_UEXPR:
     lda     #45
     jsr     TB_OP_TST1
     beq     TB_IL_UEXPR1
-    ldx     #141
+    ldx     #144
     jsr     TB_OP_TST
     bne     TB_IL_SEXPR
     jsr     TB_IL_SEXPR
@@ -540,24 +547,24 @@ TB_IL_INKEY1:
     jsr     TB_IL_BEXPR1
     jmp     TB_OP_INKEY
 TB_IL_SEXPR4:
-    ldx     #145
-    jsr     TB_OP_TST
-    beq     TB_IL_ASC
     ldx     #148
     jsr     TB_OP_TST
+    beq     TB_IL_ASC
+    ldx     #151
+    jsr     TB_OP_TST
     beq     TB_IL_INKEY
-    ldx     #153
+    ldx     #156
     jsr     TB_OP_TST
     beq     TB_IL_FPMUL
-    ldx     #158
+    ldx     #161
     ldy     #34
     jsr     TB_OP_TSTOP
     beq     TB_IL_SEXPR3
-    ldx     #161
+    ldx     #164
     ldy     #36
     jsr     TB_OP_TSTOP
     beq     TB_IL_SEXPR3
-    ldx     #165
+    ldx     #168
     ldy     #38
     jsr     TB_OP_TSTOP
     beq     TB_IL_SEXPR3
@@ -613,6 +620,7 @@ TB_TOKTAB:
     .db     "STE", $D0
     .db     "CHR", $A4
     .db     "SP", $C3
+    .db     "HE", $D8
     .db     "O", $D2
     .db     "NO", $D4
     .db     "AN", $C4

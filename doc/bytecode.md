@@ -299,6 +299,10 @@ line is reached, a syntax error will result.
 
 Pop a value from AESTK and print it as a decimal number.
 
+### PRHEX
+
+Pop a value from AESTK and print it as a hexadecimal number.
+
 ### PRC
 
 Pop a value from AESTK and print it as an ASCII character.  Only the

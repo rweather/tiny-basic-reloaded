@@ -1101,6 +1101,31 @@ TB_PRU_1_DIGIT:
     ora     #$30
     jmp     COUT
 ;
+; "PRHEX" opcode handler.
+;
+; Print the integer in TB_ACCUM in hexadecimal.
+;
+TB_OP_PRHEX:
+    lda     TB_ACCUM+1
+    jsr     TB_OP_PRHEX_BYTE
+    lda     TB_ACCUM
+TB_OP_PRHEX_BYTE:
+    pha
+    lsr     a
+    lsr     a
+    lsr     a
+    lsr     a
+    jsr     TB_OP_PRHEX_BYTE2
+    pla
+TB_OP_PRHEX_BYTE2:
+    and     #$0F
+    ora     #$30
+    cmp     #$3A
+    bcc     TB_OP_PRHEX_BYTE3
+    adc     #6
+TB_OP_PRHEX_BYTE3:
+    jmp     COUT
+;
 ; "PRS" opcode handler.
 ;
 ; Print a string from the program text, terminated by a double-quote.

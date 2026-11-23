@@ -108,6 +108,7 @@ instructions = {
     'INKEY':    { 'code': 0x63, 'ae_stack': ['pop', 'push'] },
     'TSTB':     { 'code': 0x64, 'args': ['label8'], 'ae_stack': ['push'] },
     'FPMUL':    { 'code': 0x65, 'ae_stack': ['pop3', 'push'] },
+    'PRHEX':    { 'code': 0x66, 'ae_stack': ['pop'] },
 
     'BAND':     { 'code': 0x70, 'ae_stack': ['pop2', 'push'] },
     'BOR':      { 'code': 0x71, 'ae_stack': ['pop2', 'push'] },

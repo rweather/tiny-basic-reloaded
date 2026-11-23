@@ -79,6 +79,7 @@ shows the operator precedence from highest to lowest:
 * [ABS](#abs) - Computes the absolute value of a number.
 * [ASC](#asc) - Converts the first character of a string into its ASCII code.
 * [CHR$](#chrs) - Prints a character by its ASCII code.
+* [HEX](#hex) - Prints a number in hexadecimal.
 * [INKEY](#inkey) - Gets input a key at a time without waiting.
 * [PEEK](#peek) - Peeks at the value in a memory location.
 * [RND](#rnd) - Generates a random number.
@@ -287,6 +288,9 @@ Finally, the squares are printed.
 **Description:**
 > **END** may appear anywhere in the program.  When encountered,
 program execution stops and control returns to direct command mode.
+
+> If program execution falls off the end of the program, an implicit
+**END** will be performed.
 
 **Examples:**
 
@@ -530,6 +534,35 @@ _expression_ does not exist in the program.<br/>
 
 ---
 
+<a name="hex"/>
+### HEX
+
+**Purpose:** Prints a number in hexadecimal.
+
+**Format:**
+> **PRINT HEX**(_expression_)
+
+**Description:**
+> **HEX**(_expression_) evaluates the _expression_ and prints
+it in hexadecimal.
+
+> **HEX** can only be used from within a **PRINT** statement as the
+language does not support string variables.
+
+> Hexadecimal constants can be embedded in the BASIC program by
+prefixing them with a dollar sign; for example "$94B".
+
+**Examples:**
+
+    PRINT HEX(940)
+    03AC
+    PRINT HEX(-1)
+    FFFF
+    PRINT $94B
+    2379
+
+---
+
 <a name="inkey"/>
 ### INKEY
 
@@ -759,8 +792,8 @@ A semi-colon continues printing the following items on the same
 line without a CR-LF.  A comma will move over to the next TAB stop.
 
 > Items to print may be a literal string in double-quotes, an
-integer expression to print a number, a **CHR$** expression or a
-**SPC** expression.
+integer expression to print a number, an expression involving
+**CHR$**, **SPC**, or **HEX**.
 
 > **CHR$**(_expression_) evaluates the _expression_ and prints the
 ASCII character corresponding to the low 8 bits of the value.
@@ -768,6 +801,9 @@ The upper bits are discarded.
 
 > **SPC**(_expression_) evaluates the _expression_ and prints
 that may spaces.
+
+> **HEX**(_expression_) evaluates the _expression_ and prints
+it in hexadecimal.
 
 > **?** may be used as an abbreviation for **PRINT**.
 
@@ -777,6 +813,7 @@ that may spaces.
     PRINT 10,20
     PRINT "Print a double-quote: ";CHR$(34)
     PRINT SPC(20);
+    PRINT "Address is $";HEX(X)
 
 ---
 

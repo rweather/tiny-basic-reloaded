@@ -111,31 +111,6 @@ CBREAK_no:
     lda     #1                  ; Clear Z on exit for not CTRL-C.
     rts
 ;
-; Print the byte in A in hexadecimal.  For testing purposes only.
-; Preserves A, X, and Y.
-;
-PRHEX:
-    pha
-    jsr     PRHEX1
-    pla
-    rts
-PRHEX1:
-    pha
-    lsr     a
-    lsr     a
-    lsr     a
-    lsr     a
-    jsr     PRHEX2
-    pla
-PRHEX2:
-    and     #$0F
-    ora     #$30
-    cmp     #$3A
-    bcc     PRHEX3
-    adc     #6
-PRHEX3:
-    jmp     COUT
-;
 ; System vectors.
 ;
     .org    $FFFA

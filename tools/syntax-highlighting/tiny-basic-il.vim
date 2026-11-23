@@ -90,6 +90,7 @@ syn match   ilOpcode            "\<SAVE\>"
 syn match   ilOpcode            "\<INKEY\>"
 syn match   ilOpcode            "\<TSTB\>"
 syn match   ilOpcode            "\<FPMUL\>"
+syn match   ilOpcode            "\<PRHEX\>"
 
 syn match   ilOpcode            "\<BAND\>"
 syn match   ilOpcode            "\<BOR\>"

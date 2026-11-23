@@ -254,7 +254,11 @@ PRINT7:     TST     PRINT8 'SPC'; SPC prints a number of spaces
             CALL    BEXPR       ; Get the number of spaces
             TAB                 ; Print the spaces
             JMP     PRINT1      ; Check for ';' or ',' after the spaces
-PRINT8:     CALL    EXPR        ; Must be a numeric expression if we get here
+PRINT8:     TST     PRINT9 'HEX'; HEX prints a number in hexadecimal
+            CALL    BEXPR       ; Get the number to be printed
+            PRHEX               ; Print the number in hex
+            JMP     PRINT1      ; Check for ';' or ',' after the number
+PRINT9:     CALL    EXPR        ; Must be a numeric expression if we get here
             PRN                 ; Print the number
             JMP     PRINT1      ; Check for ';' or ',' after the number
 ;

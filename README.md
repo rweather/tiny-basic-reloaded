@@ -83,7 +83,7 @@ missing something like INKEY.
 * 26 arrays of 16-bit integers which can be dimensioned with 1 or 2 dimensions.
 * Commands: CALL, CLR, DIM, END, FOR...NEXT, GOSUB...RETURN, GOTO,
 IF...THEN, IF...GOTO, INPUT, LET, LIST, LOAD, POKE, POP, PRINT,
-REM, RUN, SAVE, SIZE, SPC.
+REM, RUN, SAVE, SIZE, SPC, HEX.
 * Operators: +, -, &#42;, /, MOD, ABS, AND, OR, NOT, BAND, BOR, BNOT, XOR,
 SHL, SHR, LSL, =, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=.
 * Built-in functions: ABS, PEEK, RND.
@@ -101,7 +101,11 @@ more information.
 The following targets are currently supported:
 
 * C reference implementation
-* MOS 6502A (need the "A" for the fixed "ROR" instruction)
+* MOS 6502A (need the "A" version for the fixed "ROR" instruction)
+  - Supports my 6502 emulator and Ben Eater's 6502 Breadboard Computer
+
+CPU's under consideration for future ports, in no particular order:
+RCA 1802, Z-80, TMS9900, 6800.
 
 More to come!
 

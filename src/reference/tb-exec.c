@@ -211,6 +211,7 @@ int tb_match_number
     uint32_t value;
     int is_neg = 0;
     int skip_ws = 0;
+    int base = 10;
     if (ch == '-') {
         if (allow_sign) {
             is_neg = 1;
@@ -233,16 +234,47 @@ int tb_match_number
         }
     }
     ch = state->cursor[offset];
-    if (ch < '0' || ch > '9') {
+    if (ch == '$') {
+        /* Recognise a hexadecimal constant */
+        ++offset;
+        ch = state->cursor[offset];
+        if (ch >= '0' && ch <= '9') {
+            base = 16;
+            value = ch - '0';
+        } else if (ch >= 'A' && ch <= 'F') {
+            base = 16;
+            value = ch - 'A' + 10;
+        } else if (ch >= 'a' && ch <= 'f') {
+            base = 16;
+            value = ch - 'a' + 10;
+        } else {
+            return 0;
+        }
+    } else if (ch < '0' || ch > '9') {
         return 0;
+    } else {
+        value = ch - '0';
     }
-    value = ch - '0';
     ++offset;
     while ((ch = state->cursor[offset]) != 0) {
-        if (ch < '0' || ch > '9') {
-            break;
+        if (base == 16) {
+            if (ch >= '0' && ch <= '9') {
+                ch = ch - '0';
+            } else if (ch >= 'A' && ch <= 'F') {
+                ch = ch - 'A' + 10;
+            } else if (ch >= 'a' && ch <= 'f') {
+                ch = ch - 'a' + 10;
+            } else {
+                break;
+            }
+        } else {
+            if (ch < '0' || ch > '9') {
+                break;
+            } else {
+                ch -= '0';
+            }
         }
-        value = value * 10 + (ch - '0');
+        value = value * base + ch;
         if (value > 65535U) {
             /* Value is too big to be a 16-bit integer.  While integers
              * are signed, we allow up to 65535 for ease of entering
@@ -1243,6 +1275,11 @@ void tb_exec_one(tb_state_t *state)
         y = tb_pop(state);
         x = tb_pop(state);
         tb_push(state, tb_fpmul(state, tb_pop(state), x, y));
+        break;
+
+    case TB_I_PRHEX:
+        /* Print the number at the top of the AESTK in hexadecimal */
+        printf("%04X", (int)(tb_pop(state)));
         break;
 
     default:

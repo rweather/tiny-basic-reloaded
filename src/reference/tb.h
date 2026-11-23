@@ -110,6 +110,7 @@ extern "C" {
 #define TB_I_INKEY          0x63    /**< Input a keystroke without waiting */
 #define TB_I_TSTB           0x64    /**< Get a fixed-point bit count */
 #define TB_I_FPMUL          0x65    /**< Perform fixed-point multiplication */
+#define TB_I_PRHEX          0x66    /**< Print a number in hexadecimal */
 
 #define TB_I_BAND           0x70    /**< Bitwise AND */
 #define TB_I_BOR            0x71    /**< Bitwise OR */
