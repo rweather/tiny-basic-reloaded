@@ -4,7 +4,7 @@ Tiny BASIC Reloaded
 ## History
 
 [Tiny BASIC](https://en.wikipedia.org/wiki/Tiny_BASIC) was created by
-contributors to the "People's Computer Company" (PCC) newletter,
+contributors to the "People's Computer Company" (PCC) newsletter,
 which over time evolved into Doctor Dobb's Journal.  Tiny BASIC Extended
 followed, which added more features from standard BASIC like arrays
 and FOR..NXT loops (yes, "NXT" not "NEXT").
