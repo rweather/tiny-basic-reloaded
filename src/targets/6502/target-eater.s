@@ -49,6 +49,7 @@ SERWR   .equ    $10         ; Serial buffer write position.
 SERRD   .equ    $11         ; Serial buffer read position.
 SYSTICK .equ    $12         ; 16-bit millisecond tick counter.
 TIMEOUT .equ    $14         ; Start of a timeout period.
+ANSITMP .equ    $16         ; 2 bytes of temporaries for the ANSI escape code.
 ;
 ; Location of the 256-byte serial input buffer in RAM.
 ;
@@ -244,13 +245,13 @@ STARTUP_DELAY:
 ;
 ; Preserves X and Y.  Modifies A.
 ;
-CIN:
+CIN_SYS:
     jsr     CIN_NOWAIT
     bcs     CIN_READY
     inc     TB_SEED     ; Increment the random number seed while waiting.
-    bne     CIN
+    bne     CIN_SYS
     inc     TB_SEED+1
-    bra     CIN
+    bra     CIN_SYS
 CIN_READY:
     rts
 ;
@@ -287,7 +288,7 @@ CIN_NONE:
 ;
 ; Get a character from the serial port with a timeout in milliseconds.
 ;
-CIN_T:
+CIN_T_SYS:
     cpx     #0
     beq     CIN_NOWAIT
     phy
@@ -350,25 +351,6 @@ COUT_delay:
     plx
     rts
 ;
-; Clear the screen.
-;
-CLS:
-    pha
-    phx
-    ldx     #0
-CLS_LOOP:
-    lda     CLS_STR,x
-    beq     CLS_DONE
-    jsr     COUT
-    inx
-    bne     CLS_LOOP
-CLS_DONE:
-    plx
-    pla
-    rts
-CLS_STR:
-    db      $1B, "[H", $1B, "[2J", $1B, "[0m", 0
-;
 ; Peek at the input to see if it is CTRL-S or CTRL-C.  Preserves X and Y.
 ; Sets Z if CTRL-C is pressed.
 ;
@@ -388,6 +370,10 @@ CBREAK_yes:
 CBREAK_no:
     lda     #1          ; Clear Z on exit for not CTRL-C.
     rts
+;
+; Include the ANSI escape handling code.
+;
+    .include ansi-escapes.s
 ;
 ; Interrupt handler.
 ;

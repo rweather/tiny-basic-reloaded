@@ -21,10 +21,10 @@ LIST_FILES = \
 
 all: $(TARGETS)
 
-target-emul.rom: target-emul.s $(TB_SOURCES)
+target-emul.rom: target-emul.s ansi-escapes.s $(TB_SOURCES)
 	$(VASM) $(VASM_OPTIONS) -L target-emul.lst -o $@ target-emul.s
 
-target-eater.rom: target-eater.s $(TB_SOURCES)
+target-eater.rom: target-eater.s ansi-escapes.s $(TB_SOURCES)
 	$(VASM) $(VASM_OPTIONS) -c02 -L target-eater.lst -o $@ target-eater.s
 
 tb-bytecode.s: $(IL_SOURCE)

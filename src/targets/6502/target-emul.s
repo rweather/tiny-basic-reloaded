@@ -37,7 +37,7 @@ BASIC_MEM_END   .equ    $C000
     .include tb-core.s
     .include tb-bytecode.s
 
-    .org $FF80
+    .org $FC00
 ;
 ; Reset vector for the system.
 ;
@@ -50,14 +50,14 @@ RESET:
 ;
 ; Preserves X and Y.  Modifies A.
 ;
-CIN:
+CIN_SYS:
     lda     $C7E7       ; Wait for a key in the emulator.
     and     #$7F
     rts
 ;
 ; Wait for a character with a timeout.  Modifies A.  Preserves X and Y.
 ;
-CIN_T:
+CIN_T_SYS:
     stx     $C7E9       ; Set the emulator's key timeout.
     lda     $C7E8       ; Wait for the key up till the timeout.
     bpl     CIN_timeout
@@ -67,11 +67,6 @@ CIN_T:
 CIN_timeout:
     lda     #0          ; We don't have a key.
     clc
-    rts
-;
-; Clear the screen.  Does nothing in this implementation.
-;
-CLS:
     rts
 ;
 ; Print a carriage return and line feed.
@@ -110,6 +105,11 @@ CBREAK_yes:
 CBREAK_no:
     lda     #1                  ; Clear Z on exit for not CTRL-C.
     rts
+;
+; Include the ANSI escape handling code.
+;
+ANSITMP .equ    $16             ; Temporaries for ANSI escape code handling.
+    .include ansi-escapes.s
 ;
 ; System vectors.
 ;
