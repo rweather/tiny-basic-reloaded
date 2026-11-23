@@ -127,7 +127,6 @@ in use by Tiny BASIC Reloaded at the moment.
 
 ---
 
-<a name="abs"/>
 ### ABS
 
 **Purpose:** Computes the absolute value of a number.
@@ -142,7 +141,6 @@ due to how 2's complement arithmetic works.
 
 ---
 
-<a name="asc"/>
 ### ASC
 
 **Purpose:** Converts the first character of a string into its ASCII code.
