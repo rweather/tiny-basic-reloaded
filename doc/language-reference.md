@@ -161,7 +161,6 @@ Otherwise, the result is the ASCII code for the first character of _string_.
 
 ---
 
-<a name="call"/>
 ### CALL
 
 **Purpose:** Calls a machine language subroutine.
@@ -183,7 +182,6 @@ is undefined.
 
 ---
 
-<a name="chrs"/>
 ### CHR$
 
 **Purpose:** Prints a character by its ASCII code.
@@ -205,7 +203,6 @@ language does not support string variables.
 
 ---
 
-<a name="clr"/>
 ### CLR
 
 **Purpose:** Clears all variables and arrays from memory.
@@ -228,7 +225,6 @@ array variables **A** to **Z** is deallocated.
 
 ---
 
-<a name="dim"/>
 ### DIM
 
 **Purpose:** Dimensions arrays and allocates the memory for them.
@@ -275,7 +271,6 @@ Finally, the squares are printed.
 
 ---
 
-<a name="end"/>
 ### END
 
 **Purpose:** Ends program execution and return to direct command mode.
@@ -298,7 +293,6 @@ program execution stops and control returns to direct command mode.
 
 ---
 
-<a name="exit"/>
 ### EXIT
 
 **Purpose:** Exits BASIC back to the surrounding operating system.
@@ -322,7 +316,6 @@ present, the default exit status is zero.
 
 ---
 
-<a name="fornext"/>
 ### FOR...NEXT
 
 **Purpose:** Loops around a given number of times.
@@ -373,7 +366,6 @@ variable name.
 
 ---
 
-<a name="fpmul"/>
 ### FPMUL
 
 **Purpose:** Performs fixed-point multiplication.
@@ -420,7 +412,6 @@ cannot be computed with regular 16-bit multiplication and division.
 
 ---
 
-<a name="gosub"/>
 ### GOSUB...RETURN
 
 **Purpose:** Calls and returns from subroutines
@@ -467,7 +458,6 @@ to compute the line number at runtime.  This has a similar effect to
 
 ---
 
-<a name="goto"/>
 ### GOTO
 
 **Purpose:** Directs program flow to another line in the program.
@@ -500,7 +490,6 @@ to compute the line number at runtime.  This has a similar effect to
 
 ---
 
-<a name="ifthen"/>
 ### IF...THEN and IF...GOTO
 
 **Purpose:** Redirecting program flow based on a condition.
@@ -532,7 +521,6 @@ _expression_ does not exist in the program.<br/>
 
 ---
 
-<a name="hex"/>
 ### HEX
 
 **Purpose:** Prints a number in hexadecimal.
@@ -561,7 +549,6 @@ prefixing them with a dollar sign; for example "$94B".
 
 ---
 
-<a name="inkey"/>
 ### INKEY
 
 **Purpose:** Gets input a key at a time without waiting.
@@ -596,7 +583,6 @@ is not supplied, the default value is zero.
 
 ---
 
-<a name="input"/>
 ### INPUT
 
 **Purpose:** Enter numeric values from the keyboard.
@@ -618,7 +604,6 @@ written to _var1_, _var2_, etc.
 
 ---
 
-<a name="let"/>
 ### LET
 
 **Purpose:** Assigns values to variables or array elements.
@@ -642,7 +627,6 @@ The **LET** keyword is optional.
 
 ---
 
-<a name="list"/>
 ### LIST
 
 **Purpose:** List program lines.
@@ -676,7 +660,6 @@ Only numeric _line1_ and _line2_ values are allowed.
 
 ---
 
-<a name="load"/>
 ### LOAD
 
 **Purpose:** Loads a program from secondary storage.
@@ -702,7 +685,6 @@ cassette tape.  With a _filename_, loads from a file on disk.
 
 ---
 
-<a name="peek"/>
 ### PEEK
 
 **Purpose:** Peeks at a value in a memory location.
@@ -722,7 +704,6 @@ will always return zero.
 
 ---
 
-<a name="poke"/>
 ### POKE
 
 **Purpose:** Pokes a value into a memory location.
@@ -743,7 +724,6 @@ does nothing.
 
 ---
 
-<a name="pop"/>
 ### POP
 
 **Purpose:** Pops a subroutine return address from the subroutine stack.
@@ -774,7 +754,6 @@ longer return to that point.
 
 ---
 
-<a name="print"/>
 ### PRINT
 
 **Purpose:** Prints characters to the output device.
@@ -815,7 +794,6 @@ it in hexadecimal.
 
 ---
 
-<a name="rnd"/>
 ### RND
 
 **Purpose:** Generates a random number.
@@ -848,7 +826,6 @@ between 0 and _expression_ - 1.
 
 ---
 
-<a name="rem"/>
 ### REM
 
 **Purpose:** Adds a comment, remark, or reminder to the code.
@@ -867,7 +844,6 @@ with the next line.  It is used to add comments to the code.
 
 ---
 
-<a name="run"/>
 ### RUN
 
 **Purpose:** Starts running the program.
@@ -880,7 +856,6 @@ with the next line.  It is used to add comments to the code.
 
 ---
 
-<a name="save"/>
 ### SAVE
 
 **Purpose:** Saves the program to secondary storage.
@@ -905,7 +880,6 @@ saves to a file on disk.
 
 ---
 
-<a name="size"/>
 ### SIZE
 
 **Purpose:** Prints memory size information for the program and variables.
@@ -925,7 +899,6 @@ saves to a file on disk.
 
 ---
 
-<a name="spc"/>
 ### SPC
 
 **Purpose:** Prints a specified number of spaces.
